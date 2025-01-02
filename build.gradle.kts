@@ -44,6 +44,16 @@ dependencies {
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:mysql")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	// Lombok
+	compileOnly("org.projectlombok:lombok")
+	annotationProcessor("org.projectlombok:lombok")
+
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+	// Mock
+	testImplementation("com.squareup.okhttp3:okhttp:4.10.0")
+	testImplementation("com.squareup.okhttp3:mockwebserver:4.11.0")
 }
 
 tasks.withType<Test> {
