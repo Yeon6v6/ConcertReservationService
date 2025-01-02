@@ -1,7 +1,6 @@
-package kr.hhplus.be.server;
+package kr.hhplus.be.server.concertresvsys.sample;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kr.hhplus.be.server.concertresvsys.sample.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
