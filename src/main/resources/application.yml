@@ -14,9 +14,10 @@ spring:
   jpa:
     open-in-view: false
     generate-ddl: false
-    show-sql: false
+    show-sql: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
+#      ddl-auto: create
     properties:
       hibernate.timezone.default_storage: NORMALIZE_UTC
       hibernate.jdbc.time_zone: UTC
@@ -29,3 +30,27 @@ spring:
     url: jdbc:mysql://localhost:3307/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
     username: application
     password: application
+  sql:
+    init:
+      mode: always
+
+logging:
+  level:
+    org.springframework.jdbc.datasource.init.ScriptUtils: DEBUG
+
+# Swagger
+springdoc:
+  # Swagger UI 접속 경로 설정 (http://localhost:8080/swagger-ui/index.html)
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha # UI에서 API 메서드(operations) 정렬 방식을 알파벳 순으로 설정
+    tags-sorter: alpha # UI에서 태그(tags) 정렬 방식을 알파벳 순으로 설정
+    disable-swagger-default-url: true  # 기본 Swagger URL 비활성화 (JSON 문서 대신 UI에서 파라미터 사용)
+    doc-expansion: none # Swagger UI에서 기본적으로 문서를 접지 않은 상태로 표시
+  # OpenAPI JSON 문서 확인 경로 설정 (http://localhost:8080/api-docs)
+  api-docs:
+    path: /api-docs
+  # 기본 요청/응답 콘텐츠 타입을 JSON으로 설정
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
