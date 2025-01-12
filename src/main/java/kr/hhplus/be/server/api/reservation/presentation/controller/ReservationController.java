@@ -3,7 +3,6 @@ package kr.hhplus.be.server.api.reservation.presentation.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.response.ApiResponse;
-import kr.hhplus.be.server.api.common.response.dto.ResponseDTO;
 import kr.hhplus.be.server.api.reservation.application.ReservationFacade;
 import kr.hhplus.be.server.api.reservation.application.dto.PaymentServiceRequest;
 import kr.hhplus.be.server.api.reservation.application.dto.ReservationServiceRequest;

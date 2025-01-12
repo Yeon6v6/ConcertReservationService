@@ -1,6 +1,6 @@
 package kr.hhplus.be.server.api.reservation.application;
 
-import kr.hhplus.be.server.api.balance.application.service.BalanceService;
+import kr.hhplus.be.server.api.user.application.service.BalanceService;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.ReservationStatus;
 import kr.hhplus.be.server.api.concert.application.service.ConcertService;
