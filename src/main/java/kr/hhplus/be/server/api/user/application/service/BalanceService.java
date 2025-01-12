@@ -1,14 +1,12 @@
-package kr.hhplus.be.server.api.balance.application.service;
+package kr.hhplus.be.server.api.user.application.service;
 
-import kr.hhplus.be.server.api.balance.domain.entity.Balance;
-import kr.hhplus.be.server.api.balance.exception.BalanceErrorCode;
-import kr.hhplus.be.server.api.balance.infrastructure.BalanceRepository;
+import kr.hhplus.be.server.api.user.domain.entity.Balance;
+import kr.hhplus.be.server.api.user.exception.BalanceErrorCode;
+import kr.hhplus.be.server.api.user.domain.repository.BalanceRepository;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor

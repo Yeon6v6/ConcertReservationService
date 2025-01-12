@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.api.balance.exception;
+package kr.hhplus.be.server.api.user.exception;
 
 import kr.hhplus.be.server.api.common.exception.ErrorCode;
 import lombok.Getter;

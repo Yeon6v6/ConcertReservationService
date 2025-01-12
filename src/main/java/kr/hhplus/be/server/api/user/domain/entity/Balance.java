@@ -1,12 +1,10 @@
-package kr.hhplus.be.server.api.balance.domain.entity;
+package kr.hhplus.be.server.api.user.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
 
 @Entity
 @Getter

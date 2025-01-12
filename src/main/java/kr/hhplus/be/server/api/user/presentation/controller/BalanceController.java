@@ -1,16 +1,14 @@
-package kr.hhplus.be.server.api.balance.presentation.controller;
+package kr.hhplus.be.server.api.user.presentation.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.hhplus.be.server.api.balance.application.service.BalanceService;
-import kr.hhplus.be.server.api.balance.presentation.dto.BalanceResponse;
-import kr.hhplus.be.server.api.balance.presentation.dto.ChargeRequest;
+import kr.hhplus.be.server.api.user.application.service.BalanceService;
+import kr.hhplus.be.server.api.user.presentation.dto.BalanceResponse;
+import kr.hhplus.be.server.api.user.presentation.dto.ChargeRequest;
 import kr.hhplus.be.server.api.common.response.ApiResponse;
 import kr.hhplus.be.server.api.common.response.dto.ResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/users/balance")
