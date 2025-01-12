@@ -1,7 +1,9 @@
 package kr.hhplus.be.server.api.reservation.domain.entity;
 
 import jakarta.persistence.*;
+import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.ReservationStatus;
+import kr.hhplus.be.server.api.reservation.exception.ReservationErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,4 +38,18 @@ public class Reservation {
 
     private Long price; // (예약좌석)결제 금액
     private LocalDateTime paidAt; // 결제일
+
+    /**
+     * 결제 관련 내용 업데이트
+     * - 예약의 결제 상태 업데이트 및 결제 정보 기록
+     */
+    public void pay(Long amount) {
+        if (this.status != ReservationStatus.PENDING) {
+            throw new CustomException(ReservationErrorCode.INVALID_RESERVATION_STATUS);
+        }
+        this.status = ReservationStatus.PAID;
+        this.price = amount;
+        this.paidAt = LocalDateTime.now();
+    }
+
 }

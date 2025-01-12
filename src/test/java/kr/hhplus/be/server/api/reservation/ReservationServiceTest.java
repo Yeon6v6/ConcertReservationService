@@ -7,14 +7,12 @@ import kr.hhplus.be.server.api.reservation.application.dto.PaymentServiceRequest
 import kr.hhplus.be.server.api.reservation.application.dto.ReservationServiceRequest;
 import kr.hhplus.be.server.api.reservation.application.service.ReservationService;
 import kr.hhplus.be.server.api.reservation.domain.entity.Reservation;
-import kr.hhplus.be.server.api.reservation.domain.entity.repository.ReservationRepository;
+import kr.hhplus.be.server.api.reservation.domain.repository.ReservationRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

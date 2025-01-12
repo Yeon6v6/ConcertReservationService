@@ -1,10 +1,8 @@
-package kr.hhplus.be.server.api.balance.presentation.dto;
+package kr.hhplus.be.server.api.user.presentation.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigDecimal;
 
 @Getter
 @Setter

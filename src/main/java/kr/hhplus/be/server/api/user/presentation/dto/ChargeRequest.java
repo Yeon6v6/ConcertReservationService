@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.api.balance.presentation.dto;
+package kr.hhplus.be.server.api.user.presentation.dto;
 
 import lombok.Getter;
 

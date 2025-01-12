@@ -1,16 +1,15 @@
-package kr.hhplus.be.server.api.balance.presentation.controller;
+package kr.hhplus.be.server.api.user.presentation.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.hhplus.be.server.api.balance.application.service.BalanceService;
-import kr.hhplus.be.server.api.balance.presentation.dto.BalanceResponse;
-import kr.hhplus.be.server.api.balance.presentation.dto.ChargeRequest;
+import kr.hhplus.be.server.api.user.application.service.BalanceService;
+import kr.hhplus.be.server.api.user.domain.entity.Balance;
+import kr.hhplus.be.server.api.user.presentation.dto.BalanceResponse;
+import kr.hhplus.be.server.api.user.presentation.dto.ChargeRequest;
 import kr.hhplus.be.server.api.common.response.ApiResponse;
 import kr.hhplus.be.server.api.common.response.dto.ResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/users/balance")
@@ -27,9 +26,9 @@ public class BalanceController {
      */
     @GetMapping("/{userId}")
     public ResponseEntity<ResponseDTO<BalanceResponse>> getBalance(@PathVariable Long userId) {
-        Long amount = balanceService.getBalance(userId);
+        Balance balance = balanceService.getBalance(userId);
 
-        BalanceResponse response = new BalanceResponse(userId, amount);
+        BalanceResponse response = new BalanceResponse(balance.getUserId(), balance.getBalance());
 
         return ApiResponse.success("잔액 조회 성공", response);
     }

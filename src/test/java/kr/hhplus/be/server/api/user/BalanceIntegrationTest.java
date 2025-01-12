@@ -1,8 +1,8 @@
-package kr.hhplus.be.server.api.balance;
+package kr.hhplus.be.server.api.user;
 
-import kr.hhplus.be.server.api.balance.application.service.BalanceService;
-import kr.hhplus.be.server.api.balance.domain.entity.Balance;
-import kr.hhplus.be.server.api.balance.infrastructure.BalanceRepository;
+import kr.hhplus.be.server.api.user.application.service.BalanceService;
+import kr.hhplus.be.server.api.user.domain.entity.Balance;
+import kr.hhplus.be.server.api.user.domain.repository.BalanceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

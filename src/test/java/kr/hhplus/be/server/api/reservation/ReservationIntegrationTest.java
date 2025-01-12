@@ -11,7 +11,8 @@ import kr.hhplus.be.server.api.reservation.application.ReservationFacade;
 import kr.hhplus.be.server.api.reservation.application.dto.PaymentServiceRequest;
 import kr.hhplus.be.server.api.reservation.application.dto.ReservationServiceRequest;
 import kr.hhplus.be.server.api.reservation.domain.entity.Reservation;
-import kr.hhplus.be.server.api.reservation.domain.entity.repository.ReservationRepository;
+import kr.hhplus.be.server.api.reservation.domain.repository.ReservationRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 public class ReservationIntegrationTest {
@@ -106,6 +106,10 @@ public class ReservationIntegrationTest {
             reservationFacade.reserveSeat(reservationRequest);
         });
         assertEquals("이미 예약된 좌석입니다.", exception.getMessage());
+
+//        assertThatThrownBy(() -> userService.chargePoint(user.getId(), chargeAmount))
+//                .isInstanceOf(IllegalArgumentException.class)
+//                .hasMessage("포인트 충전은 0보다 커야합니다."); // 예외 메시지 확인
     }
 
     @Test

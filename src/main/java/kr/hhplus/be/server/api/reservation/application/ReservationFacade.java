@@ -1,6 +1,6 @@
 package kr.hhplus.be.server.api.reservation.application;
 
-import kr.hhplus.be.server.api.balance.application.service.BalanceService;
+import kr.hhplus.be.server.api.user.application.service.BalanceService;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.ReservationStatus;
 import kr.hhplus.be.server.api.concert.application.service.ConcertService;
@@ -23,8 +23,8 @@ public class ReservationFacade {
 
     /**
      * 좌석 예약
-     * @param ReservationServiceReq
-     * @return
+     * - ConcertService를 통해 좌석 예약
+     * - ReservationService를 통해 예약 정보 생성
      */
     @Transactional
     public Reservation reserveSeat(ReservationServiceRequest ReservationServiceReq) {
@@ -41,44 +41,18 @@ public class ReservationFacade {
 
     /**
      * 예약된 좌석 결제
-     * @param paymentServiceReq
-     * @return
+     * - BalanceService를 통해 결제 처리
+     * - ReservationService를 통해 상태 업데이트
      */
     @Transactional
     public Reservation payReservation(PaymentServiceRequest paymentServiceReq) {
-        // 예약 조회
+        // 결제 처리
+        Long actualAmount = balanceService.processPayment(paymentServiceReq.getUserId(), paymentServiceReq.getPrice());
+
+        // 예약 상태 업데이트
         Reservation reservation = reservationService.findById(paymentServiceReq.getReservationId());
+        reservationService.updatePaymentStatus(reservation, actualAmount);
 
-        // 예약 상태 확인
-        if (!reservation.getStatus().equals(ReservationStatus.PENDING)) {
-            throw new CustomException(ReservationErrorCode.INVALID_RESERVATION_STATUS);
-        }
-
-        // 잔액 확인
-        Long userBalance = balanceService.getBalance(reservation.getUserId());
-        Long initialPrice = paymentServiceReq.getPrice();
-        Long chargeAmount = initialPrice - userBalance;
-        Long actualAmount = initialPrice;
-
-        if (chargeAmount > 0) {
-            // 부족한 잔액만 충전
-            balanceService.chargeBalance(reservation.getUserId(), chargeAmount);
-            actualAmount = initialPrice - chargeAmount; // 실제 결제 금액 업데이트
-        }
-
-        // 잔액 차감 (실제 결제 금액 사용)
-        balanceService.deductBalance(reservation.getUserId(), actualAmount);
-
-        // 새로운 PaymentServiceRequest 객체 생성 (실제 결제 금액 반영)
-        PaymentServiceRequest updatedPaymentServiceReq = PaymentServiceRequest.builder()
-                .userId(paymentServiceReq.getUserId())
-                .reservationId(paymentServiceReq.getReservationId())
-                .seatId(paymentServiceReq.getSeatId())
-                .price(actualAmount) // 실제 결제 금액
-                .paymentMethod(paymentServiceReq.getPaymentMethod())
-                .build();
-
-        // 예약 상태 업데이트 및 결제 기록 저장
-        return reservationService.payReservation(updatedPaymentServiceReq, ReservationStatus.PAID);
+        return reservation;
     }
 }
