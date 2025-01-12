@@ -23,8 +23,8 @@ public class ReservationFacade {
 
     /**
      * 좌석 예약
-     * @param ReservationServiceReq
-     * @return
+     * - ConcertService를 통해 좌석 예약
+     * - ReservationService를 통해 예약 정보 생성
      */
     @Transactional
     public Reservation reserveSeat(ReservationServiceRequest ReservationServiceReq) {
@@ -41,16 +41,18 @@ public class ReservationFacade {
 
     /**
      * 예약된 좌석 결제
-     * @param paymentServiceReq
-     * @return
+     * - BalanceService를 통해 결제 처리
+     * - ReservationService를 통해 상태 업데이트
      */
     @Transactional
     public Reservation payReservation(PaymentServiceRequest paymentServiceReq) {
+        // 결제 처리
         Long actualAmount = balanceService.processPayment(paymentServiceReq.getUserId(), paymentServiceReq.getPrice());
-        reservationService.updatePaymentStatus(paymentServiceReq.getReservationId(), ReservationStatus.PAID, actualAmount);
 
+        // 예약 상태 업데이트
+        Reservation reservation = reservationService.findById(paymentServiceReq.getReservationId());
+        reservationService.updatePaymentStatus(reservation, actualAmount);
 
-        // 예약 상태 업데이트 및 결제 기록 저장
-        return reservationService.payReservation(paymentServiceReq, ReservationStatus.PAID);
+        return reservation;
     }
 }

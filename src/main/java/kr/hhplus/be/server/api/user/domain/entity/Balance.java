@@ -1,6 +1,8 @@
 package kr.hhplus.be.server.api.user.domain.entity;
 
 import jakarta.persistence.*;
+import kr.hhplus.be.server.api.common.exception.CustomException;
+import kr.hhplus.be.server.api.user.exception.BalanceErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,12 +25,21 @@ public class Balance {
     @Column
     private Long balance; // 확장 될 경우 BigDecimal 사용
 
-    public void addAmount(Long chargeAmount) {
-        this.balance += chargeAmount;
+    /**
+     * 잔액 충전
+     */
+    public void charge(Long amount) {
+        this.balance += amount;
     }
 
-    public void deductAmount(Long deductAmount) {
-        this.balance -= deductAmount;
+    /**
+     * 잔액 차감
+     */
+    public void deduct(Long amount) {
+        if (this.balance < amount) {
+            throw new CustomException(BalanceErrorCode.BALANCE_INSUFFICIENT);
+        }
+        this.balance -= amount;
     }
 
 }

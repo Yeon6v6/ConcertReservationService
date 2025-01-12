@@ -15,77 +15,61 @@ public class BalanceService {
     private final BalanceRepository balanceRepository;
 
     /**
-     * 결제 처리
-     */
-    public Long processPayment(Long userId, Long totalAmount) {
-        Long userBalance = getBalance(userId);
-        Long chargeAmount = totalAmount - userBalance;
-        Long actualAmount = totalAmount;
-
-        if (chargeAmount > 0) {
-            chargeBalance(userId, chargeAmount);
-            actualAmount = totalAmount - chargeAmount;
-        }
-
-        deductBalance(userId, actualAmount);
-        return actualAmount;
-    }
-
-    /**
      * 사용자 잔액을 조회
      * - 사용자가 존재하지 않을 경우 기본값 0을 반환
      */
-    @Transactional(readOnly = true)
-    public Long getBalance(Long userId) {
+    public Balance getBalance(Long userId) {
         // 사용자 잔액 조회
         return balanceRepository.findByUserId(userId)
-                // 잔액 정보가 없으면 0 반환
-                .map(Balance::getBalance)
-                .orElse(0L);
+                // 잔액 정보가 없으면 생성 후 반환
+                .orElseGet(() -> {
+                    Balance newBalance = Balance.builder()
+                            .userId(userId)
+                            .balance(0L)
+                            .build();
+                    balanceRepository.save(newBalance);
+                    return newBalance;
+                });
     }
-    
+
+    /**
+     * 결제 처리
+     * - 잔액 확인 후 부족 시 충전
+     * - 결제 가능 금액 반환
+     */
+    public Long processPayment(Long userId, Long totalAmount) {
+        Balance balance = getBalance(userId);
+
+        // 부족한 금액 계산
+        Long insufficientAmount = totalAmount - balance.getBalance();
+        if (insufficientAmount > 0) {
+            balance.charge(insufficientAmount);
+        }
+
+        // 잔액에서 결제 금액 차감
+        balance.deduct(totalAmount);
+        balanceRepository.save(balance);
+
+        return totalAmount;
+    }
+
     /**
      * 사용자 잔액을 충전 후, 현재 잔액 반환
+     *
      * @param amount 충전 금액
      */
     @Transactional
     public Long chargeBalance(Long userId, Long amount) {
         // 사용자 잔액 조회
-        Balance balance = balanceRepository.findByUserId(userId)
-                // 잔액 정보가 없으면 새로운 Balance 객체 생성
-                .orElse(Balance.builder()
-                        .userId(userId)
-                        .balance(0L) // 초기 잔액 0으로 설정
-                        .build());
+        Balance balance = getBalance(userId);
 
         // 잔액 충전
-        balance.addAmount(amount);
+        balance.charge(amount);
 
         // 변경된 잔액 정보 저장
         balanceRepository.save(balance);
 
         // 충전 후의 현재 잔액 반환
         return balance.getBalance();
-    }
-
-    /**
-     * 사용자 잔액 차감
-     * @param amount 차감 금액
-     */
-    @Transactional
-    public void deductBalance(Long userId, Long amount) {
-        // 사용자 잔액 조회
-        Balance balance = balanceRepository.findByUserId(userId)
-                .orElseThrow(() -> new CustomException(BalanceErrorCode.BALANCE_NOT_FOUND));
-
-        // 잔액 부족 여부 확인
-        if (balance.getBalance() < amount) {
-            throw new CustomException(BalanceErrorCode.BALANCE_INSUFFICIENT);
-        }
-        // 잔액 차감
-        balance.deductAmount(amount);
-
-        // 차감 된 잔액 정보 저장
-        balanceRepository.save(balance);
     }
 }

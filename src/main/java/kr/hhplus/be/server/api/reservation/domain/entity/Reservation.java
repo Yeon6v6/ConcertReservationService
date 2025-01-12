@@ -40,14 +40,16 @@ public class Reservation {
     private LocalDateTime paidAt; // 결제일
 
     /**
-     * 예약된 좌석 결제 (상태 업데이트)
+     * 결제 관련 내용 업데이트
+     * - 예약의 결제 상태 업데이트 및 결제 정보 기록
      */
-    public void updateStatus(ReservationStatus status, Long paidAmount) {
-        if (!this.status.equals(ReservationStatus.PENDING)) {
+    public void pay(Long amount) {
+        if (this.status != ReservationStatus.PENDING) {
             throw new CustomException(ReservationErrorCode.INVALID_RESERVATION_STATUS);
         }
-        this.status = status;
+        this.status = ReservationStatus.PAID;
+        this.price = amount;
         this.paidAt = LocalDateTime.now();
-        this.price = paidAmount;
     }
+
 }

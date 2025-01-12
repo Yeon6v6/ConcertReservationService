@@ -46,13 +46,13 @@ public class Seat {
         this.status = SeatStatus.RESERVED;
     }
 
-    /**
+    /**ㄷ
      * 좌석 예약 해제
-     * :
      */
-    public void cancel(){
+    public void cancelReservation(){
         if (this.status == SeatStatus.RESERVED) {
             this.status = SeatStatus.AVAILABLE;
         }
     }
+
 }
