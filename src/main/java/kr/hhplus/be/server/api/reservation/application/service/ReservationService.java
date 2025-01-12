@@ -31,15 +31,8 @@ public class ReservationService {
     @Transactional
     public Reservation createReservation(ReservationServiceRequest serviceRequest, Seat seat) {
 
-        // 중복 예약 확인
-        boolean isDuplicate = reservationRepository.existsByConcertIdAndScheduleDateAndSeatNumber(
-                serviceRequest.getConcertId(),
-                serviceRequest.getScheduleDate(),
-                seat.getSeatNumber()
-        );
-        if (isDuplicate) {
-            throw new CustomException(ReservationErrorCode.RESERVATION_ALREADY_EXISTS);
-        }
+        // 좌석 예약
+        seat.reserve();
 
         // 예약 생성(validation은 concert에서 좌석 찾을 때 진행)
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
@@ -77,5 +70,12 @@ public class ReservationService {
                     .build();
 
         return reservationRepository.save(updateReservation);
+    }
+
+    @Transactional
+    public void updatePaymentStatus(Long reservationId, ReservationStatus status, Long paidAmount) {
+        Reservation reservation = findById(reservationId);
+        reservation.updateStatus(status, paidAmount);
+        reservationRepository.save(reservation);
     }
 }

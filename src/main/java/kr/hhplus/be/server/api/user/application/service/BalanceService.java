@@ -15,6 +15,23 @@ public class BalanceService {
     private final BalanceRepository balanceRepository;
 
     /**
+     * 결제 처리
+     */
+    public Long processPayment(Long userId, Long totalAmount) {
+        Long userBalance = getBalance(userId);
+        Long chargeAmount = totalAmount - userBalance;
+        Long actualAmount = totalAmount;
+
+        if (chargeAmount > 0) {
+            chargeBalance(userId, chargeAmount);
+            actualAmount = totalAmount - chargeAmount;
+        }
+
+        deductBalance(userId, actualAmount);
+        return actualAmount;
+    }
+
+    /**
      * 사용자 잔액을 조회
      * - 사용자가 존재하지 않을 경우 기본값 0을 반환
      */
@@ -62,7 +79,7 @@ public class BalanceService {
                 .orElseThrow(() -> new CustomException(BalanceErrorCode.BALANCE_NOT_FOUND));
 
         // 잔액 부족 여부 확인
-        if (balance.getBalance().compareTo(amount) < 0) {
+        if (balance.getBalance() < amount) {
             throw new CustomException(BalanceErrorCode.BALANCE_INSUFFICIENT);
         }
         // 잔액 차감
