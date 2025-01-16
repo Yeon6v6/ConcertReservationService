@@ -3,6 +3,7 @@ package kr.hhplus.be.server.api.concert.presentation.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.response.ApiResponse;
+import kr.hhplus.be.server.api.concert.application.dto.response.ConcertSeatResult;
 import kr.hhplus.be.server.api.concert.application.service.ConcertService;
 import kr.hhplus.be.server.api.concert.presentation.dto.AvailableDateListResponse;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class ConcertContoller {
     @GetMapping("/{concertId}/seats/available")
     public ResponseEntity<?> getAvailableSeats(@PathVariable Long concertId, @RequestParam LocalDate scheduleDate) {
         try {
-            List<Integer> availableSeats = concertService.getAvailableSeatList(concertId, scheduleDate);
+            List<ConcertSeatResult> availableSeats = concertService.getAvailableSeatList(concertId, scheduleDate);
 
             return ResponseEntity.ok(ApiResponse.success("예약 가능한 좌석 정보를 조회했습니다.", availableSeats));
         } catch (CustomException e) {

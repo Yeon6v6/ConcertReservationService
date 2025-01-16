@@ -4,6 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class PaymentInfo {
-    private Long price;
+    private Long amount;
     private String method;
 }

@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.api.reservation.presentation.dto;
 
-import kr.hhplus.be.server.api.reservation.application.dto.ReservationServiceRequest;
+import kr.hhplus.be.server.api.reservation.application.dto.command.ReservationCommand;
+import kr.hhplus.be.server.api.reservation.application.dto.result.ReservationResult;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -21,12 +22,14 @@ public class ReservationRequest {
     /**
      * Presentation DTO -> Service DTO 변환
      */
-    public ReservationServiceRequest toServiceDTO(Long concertId) {
-        return ReservationServiceRequest.builder()
-                .concertId(concertId)
-                .scheduleDate(this.date)
-                .seatId(this.seatId)
-                .seatNumber(this.seatNo)
-                .build();
+    public ReservationCommand toCommand(Long concertId) {
+        return new ReservationCommand(
+                this.userId,
+                this.seatId,
+                this.seatNo,
+                concertId,
+                this.date,
+                null
+        );
     }
 }

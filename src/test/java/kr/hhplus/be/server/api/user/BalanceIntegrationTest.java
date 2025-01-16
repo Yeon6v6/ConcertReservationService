@@ -1,8 +1,8 @@
 package kr.hhplus.be.server.api.user;
 
-import kr.hhplus.be.server.api.user.application.service.BalanceService;
-import kr.hhplus.be.server.api.user.domain.entity.Balance;
-import kr.hhplus.be.server.api.user.domain.repository.BalanceRepository;
+import kr.hhplus.be.server.api.user.application.service.UserService;
+import kr.hhplus.be.server.api.user.domain.entity.User;
+import kr.hhplus.be.server.api.user.domain.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,24 +15,24 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class BalanceIntegrationTest {
 
     @Autowired
-    private BalanceService balanceService;
+    private UserService userService;
 
     @Autowired
-    private BalanceRepository balanceRepository;
+    private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
-        balanceRepository.deleteAll();
-        balanceRepository.save(Balance.builder().userId(1L).balance(5000L).build());
+        userRepository.deleteAll();
+        userRepository.save(User.builder().id(1L).balance(5000L).build());
     }
 
     @Test
     void 잔액_충전_성공() {
         // When
-        balanceService.chargeBalance(1L, 10000L);
+        userService.chargeBalance(1L, 10000L);
 
         // Then
-        Balance updatedBalance = balanceRepository.findByUserId(1L).orElse(null);
+        User updatedBalance = userRepository.findById(1L).orElse(null);
         assertNotNull(updatedBalance);
         assertEquals(15000L, updatedBalance.getBalance());
     }
