@@ -1,8 +1,8 @@
 package kr.hhplus.be.server.api.user.presentation.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.hhplus.be.server.api.user.application.dto.response.UserBalanceResult;
-import kr.hhplus.be.server.api.user.application.service.UserService;
+import kr.hhplus.be.server.api.user.application.service.BalanceService;
+import kr.hhplus.be.server.api.user.domain.entity.Balance;
 import kr.hhplus.be.server.api.user.presentation.dto.BalanceResponse;
 import kr.hhplus.be.server.api.user.presentation.dto.ChargeRequest;
 import kr.hhplus.be.server.api.common.response.ApiResponse;
@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users/balance")
 @RequiredArgsConstructor
 @Tag(name = "User Balance", description =  "사용자 잔액 API - 잔액 조회 및 충전")
-public class UserController {
+public class BalanceController {
 
-    private final UserService userService;
+    private final BalanceService balanceService;
 
     /**
      * 잔액 조회 API
@@ -26,9 +26,9 @@ public class UserController {
      */
     @GetMapping("/{userId}")
     public ResponseEntity<ResponseDTO<BalanceResponse>> getBalance(@PathVariable Long userId) {
-        UserBalanceResult userBalnaceResult = userService.getBalance(userId);
+        Balance balance = balanceService.getBalance(userId);
 
-        BalanceResponse response = new BalanceResponse(userBalnaceResult.userId(), userBalnaceResult.balance());
+        BalanceResponse response = new BalanceResponse(balance.getUserId(), balance.getBalance());
 
         return ApiResponse.success("잔액 조회 성공", response);
     }
@@ -41,7 +41,7 @@ public class UserController {
     @PostMapping("/charge")
     public ResponseEntity<ResponseDTO<BalanceResponse>> rechargeBalance(@RequestBody ChargeRequest request) {
         // 충전 후의 현재 잔액 계산
-        Long updatedAmount = userService.chargeBalance(request.getUserId(), request.getAmount());
+        Long updatedAmount = balanceService.chargeBalance(request.getUserId(), request.getAmount());
 
         BalanceResponse response = new BalanceResponse(request.getUserId(), updatedAmount);
 

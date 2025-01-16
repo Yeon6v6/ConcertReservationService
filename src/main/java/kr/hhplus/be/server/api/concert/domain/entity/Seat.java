@@ -33,7 +33,7 @@ public class Seat {
     @Enumerated(EnumType.STRING)
     private SeatStatus status; // 좌석 상태
 
-    private Long price; // 좌석 금액
+    private Long price; // 좌석 금액ㅇ
 
     /**
      * 좌석 예약
@@ -46,7 +46,7 @@ public class Seat {
         this.status = SeatStatus.RESERVED;
     }
 
-    /**
+    /**ㄷ
      * 좌석 예약 해제
      */
     public void cancelReservation(){
@@ -55,10 +55,4 @@ public class Seat {
         }
     }
 
-    /**
-     * 좌석 결제
-     */
-    public void pay(){
-        this.status = SeatStatus.PAID;
-    }
 }

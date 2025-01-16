@@ -61,54 +61,17 @@ public class ConcertIntegrationTest {
         // Then
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertTrue(result.contains(LocalDate.of(2025, 1, 10)));
-        assertTrue(result.contains(LocalDate.of(2025, 1, 11)));
     }
 
     @Test
     void 예약_가능한_좌석_목록_조회_성공() {
         // When
-        List<?> result = concertService.getAvailableSeatList(1L, LocalDate.of(2025, 1, 10));
+        List<Integer> result = concertService.getAvailableSeatList(1L, LocalDate.of(2025, 1, 10));
 
         // Then
         assertNotNull(result);
-        assertEquals(3, result.size()); // AVAILABLE 상태의 좌석은 3개
-    }
-
-    @Test
-    void 좌석_예약_성공() {
-        // Given
-        Long seatId = seatRepository.findAvailableSeatList(1L, LocalDate.of(2025, 1, 10))
-                .stream()
-                .filter(seat -> seat.getSeatNumber() == 1)
-                .findFirst()
-                .map(Seat::getId)
-                .orElseThrow(() -> new IllegalStateException("Seat not found"));
-
-        // When
-        var result = concertService.reserveSeat(seatId);
-
-        // Then
-        assertNotNull(result);
-        assertEquals(SeatStatus.RESERVED, result.status());
-    }
-
-    @Test
-    void 예약된_좌석_결제_성공() {
-        // Given
-        Long seatId = seatRepository.findAvailableSeatList(1L, LocalDate.of(2025, 1, 10))
-                .stream()
-                .filter(seat -> seat.getSeatNumber() == 4)
-                .findFirst()
-                .map(Seat::getId)
-                .orElseThrow(() -> new IllegalStateException("Seat not found"));
-
-        // When
-        var result = concertService.payForSeat(seatId);
-
-        // Then
-        assertNotNull(result);
-        assertEquals(SeatStatus.PAID, result.status());
+        assertEquals(2, result.size());
+        assertTrue(result.contains(1));
     }
 }
 

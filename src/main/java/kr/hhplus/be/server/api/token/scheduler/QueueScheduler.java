@@ -30,8 +30,8 @@ public class QueueScheduler {
     /**
      * 10분 이상 요청 없는 ACTIVE 토큰을 EXPIRED로 처리
      */
-    @Scheduled(cron = "0 */10 * * * ?") // 매 10분마다 실행
-//    @Scheduled(fixedRate = 5000)
+//    @Scheduled(cron = "0 */10 * * * ?") // 매 10분마다 실행
+    @Scheduled(fixedRate = 5000)
     public void expireInactiveActiveTokens() {
         tokenService.expireInactiveActiveTokens();
     }

@@ -36,11 +36,7 @@ spring:
 
 logging:
   level:
-    #org.springframework.jdbc.datasource.init.ScriptUtils: DEBUG
-    root: INFO
-    kr.hhplus.be: DEBUG
-  pattern:
-      console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
+    org.springframework.jdbc.datasource.init.ScriptUtils: DEBUG
 
 # Swagger
 springdoc:

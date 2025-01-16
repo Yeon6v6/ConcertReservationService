@@ -24,14 +24,4 @@ public class ConcertSchedule {
 
     @Builder.Default
     private boolean isSoldOut = false; // 매진 여부
-
-    // 매진 여부 확인
-    public boolean isSeatSoldOut() {
-        return this.isSoldOut;
-    }
-
-    // 매진 상태로 변경
-    public ConcertSchedule markSoldOut() {
-        return this.toBuilder().isSoldOut(true).build();
-    }
 }

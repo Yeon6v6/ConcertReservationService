@@ -1,6 +1,6 @@
 package kr.hhplus.be.server.api.reservation.presentation.dto;
 
-import kr.hhplus.be.server.api.reservation.application.dto.command.PaymentCommand;
+import kr.hhplus.be.server.api.reservation.application.dto.PaymentServiceRequest;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,12 +10,15 @@ public class PaymentRequest {
     private Long userId;
     private PaymentInfo paymentInfo;
 
-    public PaymentCommand toCommand(Long reservationId) {
-        return new PaymentCommand(
-                this.userId,
-                reservationId,
-                this.paymentInfo.getAmount(),
-                this.paymentInfo.getMethod()
-        );
+    /**
+     * Presentation DTO -> Service DTO 변환
+     */
+    public PaymentServiceRequest toServiceDTO(Long reservationId) {
+        return PaymentServiceRequest.builder()
+                .userId(userId)
+                .reservationId(reservationId)
+                .price(paymentInfo.getPrice())
+                .paymentMethod(paymentInfo.getMethod())
+                .build();
     }
 }
