@@ -14,6 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
@@ -38,9 +41,13 @@ public class ReservationService {
     public ReservationResult createReservation(ReservationCommand command) {
         log.info("[ReservationService] 예약 생성 시작 >> User ID: {}, Seat ID: {}", command.userId(), command.seatId());
 
-        boolean isExistReservation = reservationRepository.existsBySeatId(command.seatId());
-        if(isExistReservation){
-            throw new CustomException(ReservationErrorCode.RESERVATION_ALREADY_EXISTS);
+        // 비관적 락으로 좌석 상태 확인
+        Reservation existingReservation = reservationRepository.findBySeatIdWithLock(command.seatId());
+        if (existingReservation != null) {
+            // 예약 만료 여부 확인
+            if (existingReservation.getExpiredAt().isAfter(LocalDateTime.now())) {
+                throw new CustomException(ReservationErrorCode.RESERVATION_ALREADY_EXISTS);
+            }
         }
 
         try {
@@ -60,5 +67,12 @@ public class ReservationService {
      */
     public void updateReservation(Reservation reservation) {
         reservationRepository.save(reservation);
+    }
+
+    /**
+     * 좌석에 대한 모든 예약 조회
+     */
+    public List<Reservation> findAllReservationsBySeatId(Long seatId) {
+        return reservationRepository.findBySeatId(seatId);
     }
 }
