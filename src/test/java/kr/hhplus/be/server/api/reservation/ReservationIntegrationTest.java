@@ -7,12 +7,13 @@ import kr.hhplus.be.server.api.concert.domain.entity.ConcertSchedule;
 import kr.hhplus.be.server.api.concert.domain.entity.Seat;
 import kr.hhplus.be.server.api.concert.domain.repository.ConcertScheduleRepository;
 import kr.hhplus.be.server.api.concert.domain.repository.SeatRepository;
-import kr.hhplus.be.server.api.reservation.application.ReservationFacade;
-import kr.hhplus.be.server.api.reservation.application.dto.PaymentServiceRequest;
-import kr.hhplus.be.server.api.reservation.application.dto.ReservationServiceRequest;
+import kr.hhplus.be.server.api.reservation.application.dto.command.ReservationCommand;
+import kr.hhplus.be.server.api.reservation.application.dto.result.PaymentResult;
+import kr.hhplus.be.server.api.reservation.application.facade.ReservationFacade;
+import kr.hhplus.be.server.api.reservation.application.dto.command.PaymentCommand;
+import kr.hhplus.be.server.api.reservation.application.dto.result.ReservationResult;
 import kr.hhplus.be.server.api.reservation.domain.entity.Reservation;
 import kr.hhplus.be.server.api.reservation.domain.repository.ReservationRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,85 +65,63 @@ public class ReservationIntegrationTest {
     @Test
     void 좌석_예약_성공() {
         // Given
-        ReservationServiceRequest reservationRequest = ReservationServiceRequest.builder()
-                .concertId(1L)
-                .userId(999L)
-                .seatId(1L)
-                .scheduleDate(LocalDate.of(2025, 1, 10))
-                .seatNumber(1)
-                .build();
+        ReservationCommand reservationCommand = ReservationCommand.of(
+                1L, 1L, 1, 1L, LocalDate.of(2025, 1, 10), 10000L
+        );
 
         // When
-        Reservation reservation = reservationFacade.reserveSeat(reservationRequest);
+        ReservationResult reservationResult = reservationFacade.reserveSeat(reservationCommand);
 
         // Then
-        assertNotNull(reservation);
-        assertEquals(1L, reservation.getConcertId());
-        assertEquals(LocalDate.of(2025, 1, 10), reservation.getScheduleDate());
-        assertEquals(1, reservation.getSeatNumber());
-        assertEquals(ReservationStatus.PENDING, reservation.getStatus());
+        assertNotNull(reservationResult);
+        assertEquals(1L, reservationResult.concertId());
+        assertEquals(LocalDate.of(2025, 1, 10), reservationResult.scheduleDate());
+        assertEquals(1, reservationResult.seatNumber());
 
         // 좌석 상태 확인
-        Seat updatedSeat = seatRepository.findById(reservation.getSeatId()).orElse(null);
+        Seat updatedSeat = seatRepository.findById(reservationResult.seatId()).orElse(null);
         assertNotNull(updatedSeat);
         assertEquals(SeatStatus.RESERVED, updatedSeat.getStatus());
     }
 
     @Test
     void 좌석_예약_중복_실패() {
-        // Given : 좌석 예약 요청 생성
-        ReservationServiceRequest reservationRequest = ReservationServiceRequest.builder()
-                .concertId(1L)
-                .userId(999L)
-                .scheduleDate(LocalDate.of(2025, 1, 10))
-                .seatNumber(1)
-                .build();
+        // Given
+        ReservationCommand reservationCommand = ReservationCommand.of(
+                1L, 1L, 1, 1L, LocalDate.of(2025, 1, 10), 10000L
+        );
 
-        // Given : 좌석 예약
-        reservationFacade.reserveSeat(reservationRequest);
+        reservationFacade.reserveSeat(reservationCommand);
 
         // When & Then
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            reservationFacade.reserveSeat(reservationRequest);
-        });
+        CustomException exception = assertThrows(CustomException.class, () -> reservationFacade.reserveSeat(reservationCommand));
         assertEquals("이미 예약된 좌석입니다.", exception.getMessage());
-
-//        assertThatThrownBy(() -> userService.chargePoint(user.getId(), chargeAmount))
-//                .isInstanceOf(IllegalArgumentException.class)
-//                .hasMessage("포인트 충전은 0보다 커야합니다."); // 예외 메시지 확인
     }
 
     @Test
     void 예약된_좌석_결제_성공() {
-        // Given: 좌석 예약 요청 생성
-        ReservationServiceRequest reservationRequest = ReservationServiceRequest.builder()
-                .concertId(1L)
-                .userId(999L)
-                .seatId(1L)
-                .scheduleDate(LocalDate.of(2025, 1, 10))
-                .seatNumber(1)
-                .build();
+        // Given
+        ReservationCommand reservationCommand = ReservationCommand.of(
+                1L, 1L, 1, 1L, LocalDate.of(2025, 1, 10), 10000L
+        );
+        ReservationResult reservationResult = reservationFacade.reserveSeat(reservationCommand);
 
-        Reservation reservation = reservationFacade.reserveSeat(reservationRequest);
+        PaymentCommand paymentCommand = new PaymentCommand(
+                1L, reservationResult.reservationId(), 10000L, "CREDIT_CARD"
+        );
 
-        PaymentServiceRequest paymentRequest = PaymentServiceRequest.builder()
-                .reservationId(reservation.getId())
-                .userId(1L)
-                .seatId(1L)
-                .price(10000L)
-                .build();
+        // When
+        PaymentResult paymentResult = reservationFacade.payReservation(paymentCommand);
 
-        // When: 좌석 결제 요청
-        Reservation paidReservation = reservationFacade.payReservation(paymentRequest);
-
-        // Then: 결제 상태 확인
-        assertNotNull(paidReservation);
-        assertEquals(ReservationStatus.PAID, paidReservation.getStatus());
-        assertEquals(10000L, paidReservation.getPrice());
+        // Then
+        assertNotNull(paymentResult);
+        assertEquals("PAID", paymentResult.seatStatus());
+        assertEquals(10000L, paymentResult.seatPrice());
+        assertEquals(10000L, paymentResult.paidAmount());
 
         // 결제된 좌석 상태 확인
-        Seat paidSeat = seatRepository.findById(paidReservation.getSeatId()).orElse(null);
+        Seat paidSeat = seatRepository.findById(reservationResult.seatId()).orElse(null);
         assertNotNull(paidSeat);
-        assertEquals(SeatStatus.RESERVED, paidSeat.getStatus());
+        assertEquals(SeatStatus.PAID, paidSeat.getStatus());
     }
 }

@@ -2,80 +2,63 @@ package kr.hhplus.be.server.api.reservation.application.service;
 
 import jakarta.transaction.Transactional;
 import kr.hhplus.be.server.api.common.exception.CustomException;
-import kr.hhplus.be.server.api.common.type.ReservationStatus;
-import kr.hhplus.be.server.api.reservation.application.dto.PaymentServiceRequest;
-import kr.hhplus.be.server.api.reservation.application.dto.ReservationServiceRequest;
+import kr.hhplus.be.server.api.reservation.application.dto.command.ReservationCommand;
+import kr.hhplus.be.server.api.reservation.application.dto.result.ReservationResult;
+import kr.hhplus.be.server.api.reservation.application.factory.ReservationResultFactory;
 import kr.hhplus.be.server.api.reservation.domain.entity.Reservation;
-import kr.hhplus.be.server.api.concert.domain.entity.Seat;
+import kr.hhplus.be.server.api.reservation.domain.factory.ReservationFactory;
 import kr.hhplus.be.server.api.reservation.domain.repository.ReservationRepository;
 import kr.hhplus.be.server.api.reservation.exception.ReservationErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
+    private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
 
     private final ReservationRepository reservationRepository;
+    private final ReservationFactory reservationFactory;
+    private final ReservationResultFactory reservationResultFactory;
 
+    /**
+     * 예약 ID로 예약 정보 조회
+     */
     public Reservation findById(Long reservationId) {
         return reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new CustomException(ReservationErrorCode.RESERVATION_NOT_FOUND));
     }
 
     /**
-     * 좌석 예약
+     * 예약 생성(좌석 예약)
      */
     @Transactional
-    public Reservation createReservation(ReservationServiceRequest serviceRequest, Seat seat) {
+    public ReservationResult createReservation(ReservationCommand command) {
+        log.info("[ReservationService] 예약 생성 시작 >> User ID: {}, Seat ID: {}", command.userId(), command.seatId());
 
-        // 좌석 예약
-        seat.reserve();
-
-        // 예약 생성(validation은 concert에서 좌석 찾을 때 진행)
-        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
-        Reservation reservation = Reservation.builder()
-                .concertId(serviceRequest.getConcertId())
-                .userId(serviceRequest.getUserId())
-                .scheduleDate(serviceRequest.getScheduleDate())
-                .seatId(serviceRequest.getSeatId())
-                .seatNumber(seat.getSeatNumber())
-                .status(ReservationStatus.PENDING)
-                .price(seat.getPrice())
-                .expiredAt(expiredAt)
-                .build();
-
-        // 예약 저장
-        return reservationRepository.save(reservation);
-    }
-
-    /**
-     * 좌석 결제 및 상태 변경
-     */
-    @Transactional
-    public Reservation payReservation(PaymentServiceRequest paymentServiceReq, ReservationStatus status) {
-        Reservation reservation = findById(paymentServiceReq.getReservationId());
-
-        if (reservation.getStatus() != ReservationStatus.PENDING) {
-            throw new CustomException(ReservationErrorCode.INVALID_RESERVATION_STATUS);
+        boolean isExistReservation = reservationRepository.existsBySeatId(command.seatId());
+        if(isExistReservation){
+            throw new CustomException(ReservationErrorCode.RESERVATION_ALREADY_EXISTS);
         }
 
-        Reservation updateReservation = reservation.toBuilder()
-                    .id(paymentServiceReq.getSeatId())
-                    .status(status)
-                    .price(paymentServiceReq.getPrice())
-                    .paidAt(LocalDateTime.now())
-                    .build();
-
-        return reservationRepository.save(updateReservation);
+        try {
+            // 예약(Reservation 객체) 생성
+            Reservation reservation = reservationFactory.createReservation(command);
+            Reservation savedReservation = reservationRepository.save(reservation);
+            log.info("[ReservationService] 예약 생성 완료 >> Reservation ID: {}", reservation.getId());
+            return reservationResultFactory.createResult(savedReservation);
+        } catch (CustomException e) {
+            log.error("[ReservationService] 예약 생성 실패 >> User ID: {}, Seat ID: {}", command.userId(), command.seatId(), e);
+            throw e;
+        }
     }
-
-    @Transactional
-    public void updatePaymentStatus(Long reservationId, ReservationStatus status, Long paidAmount) {
-        Reservation reservation = findById(reservationId);
-        reservation.updateStatus(status, paidAmount);
+    
+    /**
+     * 예약 정보 업데이트
+     */
+    public void updateReservation(Reservation reservation) {
         reservationRepository.save(reservation);
     }
 }

@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.response.ApiResponse;
+import kr.hhplus.be.server.api.common.type.TokenStatus;
+import kr.hhplus.be.server.api.token.application.dto.response.TokenResult;
 import kr.hhplus.be.server.api.token.application.service.TokenService;
 import kr.hhplus.be.server.api.token.domain.entity.Token;
 import kr.hhplus.be.server.api.token.exception.TokenErrorCode;
@@ -34,17 +36,18 @@ public class TokenController {
             }
 
             // 토큰 발급
-            Token token = tokenService.issueToken(request.getUserId());
-            if (token == null || token.getId() == null || token.getToken() == null) {
-                throw new CustomException(TokenErrorCode.TOKEN_INVALID_RESPONSE);
-            }
+            TokenResult tokenResult = tokenService.issueToken(request.getUserId());
 
-            // 토큰 response 생성
-            TokenIssueResponse tokenIssueResponse = TokenIssueResponse.fromEntity(token, token.getId(), false);
+            // 대기열 순서와 대기열 통과 여부 계산
+            Long queueSort = tokenResult.id(); // ID를 대기열 순서로 사용
+            boolean hasPassedQueue = tokenResult.status() == TokenStatus.ACTIVE;
+
+            // TokenIssueResponse 생성
+            TokenIssueResponse tokenIssueResponse = TokenIssueResponse.from(tokenResult, queueSort, hasPassedQueue);
 
             // 응답 헤더 설정
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", token.getToken());
+            headers.set("Authorization", tokenResult.tokenValue());
 
             // ApiResponse와 헤더를 함께 반환
             return ResponseEntity.ok()

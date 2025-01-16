@@ -3,9 +3,11 @@ package kr.hhplus.be.server.api.reservation.presentation.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.response.ApiResponse;
-import kr.hhplus.be.server.api.reservation.application.ReservationFacade;
-import kr.hhplus.be.server.api.reservation.application.dto.PaymentServiceRequest;
-import kr.hhplus.be.server.api.reservation.application.dto.ReservationServiceRequest;
+import kr.hhplus.be.server.api.reservation.application.dto.command.ReservationCommand;
+import kr.hhplus.be.server.api.reservation.application.dto.result.PaymentResult;
+import kr.hhplus.be.server.api.reservation.application.facade.ReservationFacade;
+import kr.hhplus.be.server.api.reservation.application.dto.command.PaymentCommand;
+import kr.hhplus.be.server.api.reservation.application.dto.result.ReservationResult;
 import kr.hhplus.be.server.api.reservation.domain.entity.Reservation;
 import kr.hhplus.be.server.api.reservation.presentation.dto.PaymentRequest;
 import kr.hhplus.be.server.api.reservation.presentation.dto.PaymentResponse;
@@ -14,6 +16,8 @@ import kr.hhplus.be.server.api.reservation.presentation.dto.ReservationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,13 +36,14 @@ public class ReservationController {
     @PostMapping("/{concertId}/reserve-seats")
     public ResponseEntity<?> reserveSeat(@PathVariable Long concertId, @RequestBody ReservationRequest reservationRequest) {
         try {
-            // Presentation DTO -> 서비스 계층 요청 객체 변환
-            ReservationServiceRequest serviceRequest = reservationRequest.toServiceDTO(concertId);
+            // Presentation DTO => Service DTO 변환
+            ReservationCommand reservationCommand = reservationRequest.toCommand(concertId);
 
             // 비즈니스 로직 호출
-            Reservation reservation = reservationFacade.reserveSeat(serviceRequest);
+            ReservationResult reservationResult = reservationFacade.reserveSeat(reservationCommand);
 
-            ReservationResponse reservationResponse = ReservationResponse.fromEntity(reservation);
+            // ReservationResult => Presentation DTO 변환
+            ReservationResponse reservationResponse = ReservationResponse.fromResult(reservationResult);
 
             return ResponseEntity.ok(ApiResponse.success("좌석이 임시로 예약되었습니다.", reservationResponse));
         } catch (CustomException e) {
@@ -56,12 +61,13 @@ public class ReservationController {
     public ResponseEntity<?> payment(@PathVariable Long reservationId, @RequestBody PaymentRequest paymentRequest) {
         try {
             // Presentation DTO -> 서비스 계층 요청 객체 변환
-            PaymentServiceRequest serviceRequest = paymentRequest.toServiceDTO(reservationId);
+            PaymentCommand serviceRequest = paymentRequest.toCommand(reservationId);
 
             // 비즈니스 로직 호출
-            Reservation updatedReservation = reservationFacade.payReservation(serviceRequest);
+            PaymentResult paymentResult = reservationFacade.payReservation(serviceRequest);
 
-            PaymentResponse paymentResponse = PaymentResponse.fromEntity(updatedReservation);
+            // PaymentResult => Presentation DTO 변환
+            PaymentResponse paymentResponse = PaymentResponse.fromResult(paymentResult);
 
             return ResponseEntity.ok(ApiResponse.success("결제가 성공적으로 처리되었습니다.", paymentResponse));
         } catch (CustomException e) {

@@ -7,10 +7,12 @@ DELETE FROM seat;
 DELETE FROM reservation;
 
 -- user 테이블 초기 데이터
-INSERT INTO user (id) VALUES
-(1),
-(2),
-(3);
+INSERT INTO user (id, balance) VALUES
+(1, 5000),
+(2, 10000),
+(3, 7500),
+(4, 0),
+(5, 2000);
 
 -- token 테이블 초기 데이터
 INSERT INTO token (id, token, user_id, status, expired_at, max_expired_at, created_at) VALUES
