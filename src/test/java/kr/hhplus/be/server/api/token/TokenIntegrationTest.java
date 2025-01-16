@@ -2,6 +2,7 @@ package kr.hhplus.be.server.api.token;
 
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.TokenStatus;
+import kr.hhplus.be.server.api.token.application.dto.response.TokenResult;
 import kr.hhplus.be.server.api.token.application.service.TokenService;
 import kr.hhplus.be.server.api.token.domain.entity.Token;
 import kr.hhplus.be.server.api.token.domain.repository.TokenRepository;
@@ -44,11 +45,12 @@ public class TokenIntegrationTest {
         Long userId = 1L;
 
         // When
-        Token token = tokenService.issueToken(userId);
+        TokenResult tokenResult = tokenService.issueToken(userId);
 
         // Then
-        assertThat(token).isNotNull();
-        assertThat(token.getUserId()).isEqualTo(userId);
+        assertThat(tokenResult).isNotNull();
+        assertThat(tokenResult.userId()).isEqualTo(userId);
+        assertThat(tokenResult.status()).isEqualTo(TokenStatus.PENDING);
     }
 
     @Test
