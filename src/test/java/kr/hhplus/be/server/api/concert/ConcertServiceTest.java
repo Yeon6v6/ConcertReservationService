@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.api.concert;
 
+import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.SeatStatus;
 import kr.hhplus.be.server.api.concert.application.service.ConcertService;
 import kr.hhplus.be.server.api.concert.domain.entity.ConcertSchedule;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,6 +59,7 @@ class ConcertServiceTest {
         assertNotNull(result);
         assertEquals(2, result.size());
         assertTrue(result.contains(LocalDate.of(2025, 1, 10)));
+        assertTrue(result.contains(LocalDate.of(2025, 1, 11)));
     }
 
     @Test
@@ -65,20 +68,62 @@ class ConcertServiceTest {
         Long concertId = 1L;
         LocalDate scheduleDate = LocalDate.of(2025, 1, 10);
         List<Seat> availableSeats = List.of(
-                Seat.builder().seatNumber(1).status(SeatStatus.AVAILABLE).build(),
-                Seat.builder().seatNumber(2).status(SeatStatus.AVAILABLE).build(),
-                Seat.builder().seatNumber(3).status(SeatStatus.AVAILABLE).build()
+                Seat.builder().id(1L).seatNumber(1).status(SeatStatus.AVAILABLE).build(),
+                Seat.builder().id(2L).seatNumber(2).status(SeatStatus.AVAILABLE).build(),
+                Seat.builder().id(3L).seatNumber(3).status(SeatStatus.AVAILABLE).build()
         );
         when(seatRepository.findAvailableSeatList(concertId, scheduleDate)).thenReturn(availableSeats);
 
         // When
-        List<Integer> result = concertService.getAvailableSeatList(concertId, scheduleDate);
+        List<?> result = concertService.getAvailableSeatList(concertId, scheduleDate);
 
         // Then
         assertNotNull(result);
         assertEquals(3, result.size());
-        assertTrue(result.contains(1));
-        assertTrue(result.contains(2));
+    }
+
+    @Test
+    void 좌석_예약_성공() {
+        // Given
+        Long seatId = 1L;
+        Seat seat = Seat.builder().id(seatId).seatNumber(1).status(SeatStatus.AVAILABLE).concertId(1L).scheduleDate(LocalDate.of(2025, 1, 10)).build();
+        when(seatRepository.findByIdWithLock(seatId)).thenReturn(Optional.of(seat));
+        when(seatRepository.save(any(Seat.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        var result = concertService.reserveSeat(seatId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(SeatStatus.RESERVED, result.status());
+    }
+
+    @Test
+    void 예약된_좌석_결제_성공() {
+        // Given
+        Long seatId = 1L;
+        Seat seat = Seat.builder().id(seatId).seatNumber(1).status(SeatStatus.RESERVED).concertId(1L).scheduleDate(LocalDate.of(2025, 1, 10)).build();
+        when(seatRepository.findByIdWithLock(seatId)).thenReturn(Optional.of(seat));
+        when(seatRepository.save(any(Seat.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        var result = concertService.payForSeat(seatId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(SeatStatus.PAID, result.status());
+    }
+
+    @Test
+    void 좌석_예약_실패_이미_예약됨() {
+        // Given
+        Long seatId = 1L;
+        Seat seat = Seat.builder().id(seatId).seatNumber(1).status(SeatStatus.RESERVED).concertId(1L).scheduleDate(LocalDate.of(2025, 1, 10)).build();
+        when(seatRepository.findByIdWithLock(seatId)).thenReturn(Optional.of(seat));
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class, () -> concertService.reserveSeat(seatId));
+        assertEquals("SEAT_ALREADY_RESERVED", exception.getErrorCode().getName());
     }
 }
 
