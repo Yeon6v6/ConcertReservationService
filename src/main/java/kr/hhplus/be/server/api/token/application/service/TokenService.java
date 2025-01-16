@@ -2,6 +2,7 @@ package kr.hhplus.be.server.api.token.application.service;
 
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.TokenStatus;
+import kr.hhplus.be.server.api.token.application.dto.response.TokenResult;
 import kr.hhplus.be.server.api.token.domain.entity.Token;
 import kr.hhplus.be.server.api.token.domain.repository.TokenRepository;
 import kr.hhplus.be.server.api.token.domain.validator.TokenValidator;
@@ -24,14 +25,16 @@ public class TokenService {
     /**
      * 토큰 발급 (초기 상태는 PENDING / 대기시간 부여 안함)
      */
-    public Token issueToken(Long userId) {
+    public TokenResult issueToken(Long userId) {
         Token token = Token.builder()
                 .userId(userId)
                 .token(UUID.randomUUID().toString())
                 .status(TokenStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .build();
-        return tokenRepository.save(token);
+
+        Token savedToken = tokenRepository.save(token);
+        return TokenResult.from(savedToken);
     }
 
     /**
@@ -82,5 +85,17 @@ public class TokenService {
                 tokenRepository.save(token); // 상태 저장
             }
         }
+    }
+
+    /**
+     * 특정 토큰을 즉시 만료 처리
+     */
+    @Transactional
+    public void expireToken(Long userId) {
+        Token token = tokenRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(TokenErrorCode.TOKEN_NOT_FOUND));
+
+        token.updateStatus(TokenStatus.EXPIRED); // 상태를 EXPIRED로 변경
+        tokenRepository.save(token);
     }
 }

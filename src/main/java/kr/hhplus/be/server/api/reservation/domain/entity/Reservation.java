@@ -3,6 +3,7 @@ package kr.hhplus.be.server.api.reservation.domain.entity;
 import jakarta.persistence.*;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.ReservationStatus;
+import kr.hhplus.be.server.api.concert.domain.entity.Seat;
 import kr.hhplus.be.server.api.reservation.exception.ReservationErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -40,16 +42,40 @@ public class Reservation {
     private LocalDateTime paidAt; // 결제일
 
     /**
+     * 예약 생성
+     */
+    public static Reservation create(Long userId, Long seatId, int seatNumber, Long concertId, LocalDate scheduleDate, Long price) {
+        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
+        return new Reservation(
+                null,
+                userId,
+                seatId,
+                seatNumber,
+                concertId,
+                scheduleDate,
+                ReservationStatus.PENDING,
+                expiredAt,
+                price,
+                null
+        );
+    }
+
+    /**
      * 결제 관련 내용 업데이트
      * - 예약의 결제 상태 업데이트 및 결제 정보 기록
      */
     public void pay(Long amount) {
-        if (this.status != ReservationStatus.PENDING) {
-            throw new CustomException(ReservationErrorCode.INVALID_RESERVATION_STATUS);
-        }
         this.status = ReservationStatus.PAID;
         this.price = amount;
         this.paidAt = LocalDateTime.now();
     }
 
+    public void validate() {
+        if (this.expiredAt.isBefore(LocalDateTime.now())) {
+            throw new CustomException(ReservationErrorCode.RESERVATION_EXPIRED);
+        }
+        if (this.status != ReservationStatus.PENDING) {
+            throw new CustomException(ReservationErrorCode.INVALID_RESERVATION_STATUS);
+        }
+    }
 }
