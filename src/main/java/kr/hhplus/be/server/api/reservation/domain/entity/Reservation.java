@@ -3,15 +3,12 @@ package kr.hhplus.be.server.api.reservation.domain.entity;
 import jakarta.persistence.*;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.ReservationStatus;
-import kr.hhplus.be.server.api.concert.domain.entity.Seat;
 import kr.hhplus.be.server.api.reservation.exception.ReservationErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 

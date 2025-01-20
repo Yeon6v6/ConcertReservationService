@@ -1,7 +1,6 @@
 package kr.hhplus.be.server.api.reservation;
 
 import kr.hhplus.be.server.api.common.exception.CustomException;
-import kr.hhplus.be.server.api.common.type.ReservationStatus;
 import kr.hhplus.be.server.api.common.type.SeatStatus;
 import kr.hhplus.be.server.api.concert.domain.entity.ConcertSchedule;
 import kr.hhplus.be.server.api.concert.domain.entity.Seat;
@@ -12,7 +11,6 @@ import kr.hhplus.be.server.api.reservation.application.dto.result.PaymentResult;
 import kr.hhplus.be.server.api.reservation.application.facade.ReservationFacade;
 import kr.hhplus.be.server.api.reservation.application.dto.command.PaymentCommand;
 import kr.hhplus.be.server.api.reservation.application.dto.result.ReservationResult;
-import kr.hhplus.be.server.api.reservation.domain.entity.Reservation;
 import kr.hhplus.be.server.api.reservation.domain.repository.ReservationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -8,7 +8,6 @@ import kr.hhplus.be.server.api.reservation.application.dto.result.PaymentResult;
 import kr.hhplus.be.server.api.reservation.application.facade.ReservationFacade;
 import kr.hhplus.be.server.api.reservation.application.dto.command.PaymentCommand;
 import kr.hhplus.be.server.api.reservation.application.dto.result.ReservationResult;
-import kr.hhplus.be.server.api.reservation.domain.entity.Reservation;
 import kr.hhplus.be.server.api.reservation.presentation.dto.PaymentRequest;
 import kr.hhplus.be.server.api.reservation.presentation.dto.PaymentResponse;
 import kr.hhplus.be.server.api.reservation.presentation.dto.ReservationRequest;
@@ -16,8 +15,6 @@ import kr.hhplus.be.server.api.reservation.presentation.dto.ReservationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,7 +28,6 @@ public class ReservationController {
      * 좌석 예약 요청 API
      * @param concertId
      * @param reservationRequest
-     * @return
      */
     @PostMapping("/{concertId}/reserve-seats")
     public ResponseEntity<?> reserveSeat(@PathVariable Long concertId, @RequestBody ReservationRequest reservationRequest) {
@@ -55,7 +51,6 @@ public class ReservationController {
      * 예약한 좌석 결제 API
      * @param reservationId
      * @param paymentRequest
-     * @return
      */
     @PostMapping("/{reservationId}/payment")
     public ResponseEntity<?> payment(@PathVariable Long reservationId, @RequestBody PaymentRequest paymentRequest) {

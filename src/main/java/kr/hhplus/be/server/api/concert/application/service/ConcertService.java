@@ -9,7 +9,6 @@ import kr.hhplus.be.server.api.concert.domain.repository.ConcertScheduleReposito
 import kr.hhplus.be.server.api.concert.exception.ConcertErrorCode;
 import kr.hhplus.be.server.api.concert.exception.SeatErrorCode;
 import kr.hhplus.be.server.api.concert.domain.repository.SeatRepository;
-import kr.hhplus.be.server.api.reservation.presentation.dto.PaymentInfo;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 

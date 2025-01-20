@@ -2,8 +2,6 @@ package kr.hhplus.be.server.api.reservation;
 
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.ReservationStatus;
-import kr.hhplus.be.server.api.common.type.SeatStatus;
-import kr.hhplus.be.server.api.concert.domain.entity.Seat;
 import kr.hhplus.be.server.api.reservation.application.dto.command.PaymentCommand;
 import kr.hhplus.be.server.api.reservation.application.dto.command.ReservationCommand;
 import kr.hhplus.be.server.api.reservation.application.dto.result.ReservationResult;

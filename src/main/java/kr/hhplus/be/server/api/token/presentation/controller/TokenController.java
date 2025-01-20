@@ -7,7 +7,6 @@ import kr.hhplus.be.server.api.common.response.ApiResponse;
 import kr.hhplus.be.server.api.common.type.TokenStatus;
 import kr.hhplus.be.server.api.token.application.dto.response.TokenResult;
 import kr.hhplus.be.server.api.token.application.service.TokenService;
-import kr.hhplus.be.server.api.token.domain.entity.Token;
 import kr.hhplus.be.server.api.token.exception.TokenErrorCode;
 import kr.hhplus.be.server.api.token.presentation.dto.TokenRequest;
 import kr.hhplus.be.server.api.token.presentation.dto.TokenIssueResponse;
@@ -21,14 +20,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping
 @RequiredArgsConstructor
+@RequestMapping("/tokens")
 @Tag(name = "Token", description =  "토큰 API")
 public class TokenController {
 
     private final TokenService tokenService;
 
-    @PostMapping("/tokens")
+    @PostMapping("/issue")
     public ResponseEntity<?> issueToken(@Valid @RequestBody TokenRequest request) {
         try {
             if (request.getUserId() == null) {

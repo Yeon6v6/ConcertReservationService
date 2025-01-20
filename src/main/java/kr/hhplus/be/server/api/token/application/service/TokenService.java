@@ -81,13 +81,13 @@ public class TokenService {
             Token token = tokenRepository.findByToken(tokenValue)
                     .orElseThrow(() -> new CustomException(TokenErrorCode.TOKEN_NOT_FOUND));
 
-        tokenValidator.validateTokenState(token);
-        tokenValidator.validateTokenExtension(token, 5);
+            tokenValidator.validateTokenState(token);
+            tokenValidator.validateTokenExtension(token, 5);
 
-        token.extendExpiration(5); // 만료 시간 5분 연장
-        tokenRepository.save(token);
+            token.extendExpiration(5); // 만료 시간 5분 연장
+            tokenRepository.save(token);
 
-        log.info("[TokenService] 토큰 연장 완료 >> Token ID: {}, 새로운 만료 시간: {}", token.getId(), token.getExpiredAt());
+            log.info("[TokenService] 토큰 연장 완료 >> Token ID: {}, 새로운 만료 시간: {}", token.getId(), token.getExpiredAt());
         } catch (Exception e) {
             log.error("[TokenService] 토큰 검증 및 연장 실패 >> Token Value: {}", tokenValue, e);
             throw e;

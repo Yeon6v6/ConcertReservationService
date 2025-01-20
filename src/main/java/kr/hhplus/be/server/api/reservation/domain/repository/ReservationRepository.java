@@ -20,10 +20,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     // 특정 콘서트와 날짜에 해당하는 예약 리스트 조회
     List<Reservation> findByConcertIdAndScheduleDate(Long concertId, LocalDate scheduleDate);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @QueryHints({@QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000")}) //동시성이 많을 수 있으므로 락 대기시간 설정
+    // 특정 좌석에 대한 예약 조회(Lock은 Seat가 가져감)
     @Query("SELECT r FROM Reservation r WHERE r.seatId = :seatId")
-    // 특정 좌석에 대한 예약 조회
     Reservation findBySeatIdWithLock(@Param("seatId") Long seatId);
 
     @Query("SELECT r FROM Reservation r WHERE r.seatId = :seatId")

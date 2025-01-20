@@ -1,18 +1,9 @@
 package kr.hhplus.be.server.api.token.scheduler;
 
-import kr.hhplus.be.server.api.common.type.TokenStatus;
 import kr.hhplus.be.server.api.token.application.service.TokenService;
-import kr.hhplus.be.server.api.token.domain.entity.Token;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 @Component
 @RequiredArgsConstructor

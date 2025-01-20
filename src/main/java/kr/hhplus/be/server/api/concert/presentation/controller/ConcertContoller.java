@@ -5,7 +5,6 @@ import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.response.ApiResponse;
 import kr.hhplus.be.server.api.concert.application.dto.response.ConcertSeatResult;
 import kr.hhplus.be.server.api.concert.application.service.ConcertService;
-import kr.hhplus.be.server.api.concert.presentation.dto.AvailableDateListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
