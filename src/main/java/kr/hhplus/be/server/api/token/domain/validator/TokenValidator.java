@@ -5,11 +5,7 @@ import kr.hhplus.be.server.api.common.type.TokenStatus;
 import kr.hhplus.be.server.api.token.domain.entity.Token;
 import kr.hhplus.be.server.api.token.exception.TokenErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor

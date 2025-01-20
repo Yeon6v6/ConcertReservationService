@@ -1,9 +1,7 @@
 package kr.hhplus.be.server.api.token.domain.entity;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.TokenStatus;
-import kr.hhplus.be.server.api.token.exception.TokenErrorCode;
 import lombok.*;
 
 import java.time.LocalDateTime;
