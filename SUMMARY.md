@@ -1,8 +1,10 @@
 # Table of contents
 
+* [ReadMe](README.md)
+
 ## 요구사항 분석 자료 <a href="#step5" id="step5"></a>
 
-* [플로우 차트](README.md)
+* [플로우 차트](<README (1).md>)
 * [시퀀스 다이어그램](step5/sequence-diagram.md)
 
 ## 설계 자료 <a href="#step6" id="step6"></a>
