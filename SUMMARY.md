@@ -1,6 +1,6 @@
 # Table of contents
 
-* [ReadMe](README.md)
+* [콘서트 예약 시스템 🎫](README.md)
 
 ## 요구사항 분석 자료 <a href="#step5" id="step5"></a>
 
@@ -19,3 +19,7 @@
 * [Concert](swagger/concert.md)
 * [Reservation](swagger/reservation.md)
 * [Balance](swagger/balance.md)
+
+## 동시성 처리 <a href="#concurrency" id="concurrency"></a>
+
+* [동시성 이슈 및 제어 방식 분석](concurrency/handling.md)

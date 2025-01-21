@@ -1,8 +1,6 @@
-# ReadMe
+# 콘서트 예약 시스템 🎫
 
-## HH99 콘서트 예약 시스템 🎫
-
-🗂️ **GitBook 문서** : (🔗) [HH CRS Documentation](https://cheese-2.gitbook.io/hh_crs_doc)
+## 🗂️ **GitBook 문서** : (🔗) [HH CRS Documentation](https://cheese-2.gitbook.io/hh_crs_doc)
 
 ***
 
