@@ -5,6 +5,23 @@
 * **좌석 예약**:
   * 여러 사용자가 동일한 좌석을 동시에 예약하려고 시도할 경우
     * 특정 시간(5분) 동안 좌석이 최초 요청사용자에게 임시 배정 상태로 유지되어야 하며, 해당 시간 동안 다른 사용자가 동일 좌석에 대한 접근(수정) 불가
+  *
+
+      ```java
+      /**
+       * 좌석 예약
+       * - ConcertService를 통해 좌석 예약
+       * - ReservationService를 통해 예약 정보 생성
+       */
+      @Transactional
+      public ReservationResult reserveSeat(ReservationCommand reservationCmd) {
+          // 1. 좌석 상태 확인
+          ConcertSeatResult seatResult = concertService.reserveSeat(reservationCmd.seatId());
+
+          // 2. 예약 정보 생성
+          return reservationService.createReservation(reservationCmd);
+      }
+      ```
 * **포인트 충전 및 사용**:
   * 한 사용자가 동시에 여러 요청을 보내는 경우, 잔액 불일치와 같은 데이터 무결성 문제 발생
 
@@ -107,4 +124,4 @@ _특정 데이터베이스 행에 대해 락을 설정하여, 다른 트랜잭�
   * **Redis 분산 락 중 Pub/Sub**:
     * 이벤트 기반으로 상태를 관리하며 실시간으로 충전 이벤트를 전달
     * 충전 이벤트를 구독한 프로세스들이 즉시 업데이트를 반영할 수 있어 데이터 일관성과 실시간성 증가
-    * 복잡한 충돌 감지 로직 없이 자연스럽게 요청 순서를 보장
+    * 복잡한 충돌 감지 로직 없이 자연스럽게 요청 순서가 보장됨
