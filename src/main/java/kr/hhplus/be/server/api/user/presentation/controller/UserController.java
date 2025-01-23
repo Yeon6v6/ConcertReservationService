@@ -42,7 +42,6 @@ public class UserController {
     public ResponseEntity<ResponseDTO<BalanceResponse>> rechargeBalance(@RequestBody ChargeRequest request) {
         // 충전 후의 현재 잔액 계산
         Long updatedAmount = userService.chargeBalance(request.getUserId(), request.getAmount());
-
         BalanceResponse response = new BalanceResponse(request.getUserId(), updatedAmount);
 
         return ApiResponse.success("잔액이 충전되었습니다.", response);

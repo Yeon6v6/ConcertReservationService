@@ -26,6 +26,9 @@ public class User {
      * 잔액 충전
      */
     public void chargeBalance(Long amount) {
+        if(amount <= 0) {
+            throw new CustomException(BalanceErrorCode.INVALID_CHARGE_AMOUNT);
+        }
         this.balance += amount;
     }
 
@@ -33,10 +36,12 @@ public class User {
      * 잔액 차감
      */
     public void deductBalance(Long amount) {
+        if(amount <= 0) {
+            throw new CustomException(BalanceErrorCode.INVALID_DEDUCT_AMOUNT);
+        }
         if (this.balance < amount) {
             throw new CustomException(BalanceErrorCode.BALANCE_INSUFFICIENT);
         }
         this.balance -= amount;
     }
-
 }

@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.api.user.application.service;
 
+import kr.hhplus.be.server.api.common.lock.util.RedisPublisher;
 import kr.hhplus.be.server.api.user.application.dto.response.UserBalanceResult;
 import kr.hhplus.be.server.api.user.domain.entity.User;
 import kr.hhplus.be.server.api.user.domain.repository.UserRepository;
@@ -12,17 +13,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
+    private final RedisPublisher redisPublisher;
 
     /**
      * 사용자 잔액을 조회
      * - 사용자가 존재하지 않을 경우 기본값 0을 반환
      */
     public UserBalanceResult getBalance(Long userId) {
-        log.info("[UserService] 잔액 조회 시작 >> User ID: {}", userId);
         // 사용자 잔액 조회
         try {
             UserBalanceResult result = userRepository.findById(userId)
@@ -31,10 +31,10 @@ public class UserService {
                         // 잔액 정보가 없으면 생성 후 반환
                         User newBalance = User.builder().balance(0L).build();
                         userRepository.save(newBalance);
-                        log.info("[UserService] 새로운 사용자 잔액 생성 >> User ID: {}, Initial Balance: 0", userId);
+                        log.warn("[UserService] 새로운 사용자 잔액 생성 >> User ID: {}, Initial Balance: 0", userId);
                         return UserBalanceResult.from(newBalance);
                     });
-            log.warn("[UserService] 잔액 조회 성공 >> User ID: {}, Balance: {}", userId, result.balance());
+            log.info("[UserService] 잔액 조회 성공 >> User ID: {}, Balance: {}", userId, result.balance());
             return result;
         } catch (Exception e) {
             log.error("[UserService] 잔액 조회 실패 >> User ID: {}", userId, e);
@@ -79,8 +79,6 @@ public class UserService {
 
     /**
      * 사용자 잔액을 충전 후, 현재 잔액 반환
-     *
-     * @param amount 충전 금액
      */
     @Transactional
     public Long chargeBalance(Long userId, Long amount) {
@@ -91,21 +89,50 @@ public class UserService {
                     .orElseGet(() -> {
                         User newUser = User.builder().balance(0L).build();
                         userRepository.save(newUser);
-                        log.warn("[UserService] 새로운 사용자 잔액 정보 생성 >> User ID: {}", userId);
                         return newUser;
                     });
 
             // 잔액 충전
             user.chargeBalance(amount);
-
             // 변경된 잔액 정보 저장
             userRepository.save(user);
 
             log.info("[UserService] 잔액 충전 완료 >> User ID: {}, Current Balance: {}", userId, user.getBalance());
+
             // 충전 후의 현재 잔액 반환
             return user.getBalance();
         } catch (Exception e) {
             log.error("[UserService] 잔액 충전 실패 >> User ID: {}, Amount: {}", userId, amount, e);
+            throw e;
+        }
+    }
+
+    /**
+     * 사용자 잔액 감소 후, 현재 잔액 반환
+     */
+    @Transactional
+    public Long deductBalance(Long userId, Long amount) {
+        log.info("[UserService] 잔액 차감 시작 >> User ID: {}, Amount: {}", userId, amount);
+        try {
+            // 사용자 잔액 조회
+            User user = userRepository.findById(userId)
+                    .orElseGet(() -> {
+                        User newUser = User.builder().balance(0L).build();
+                        userRepository.save(newUser);
+                        return newUser;
+                    });
+
+            // 잔액 차감
+            user.deductBalance(amount);
+            // 변경된 잔액 정보 저장
+            userRepository.save(user);
+
+            log.info("[UserService] 잔액 차감 완료 >> User ID: {}, Current Balance: {}", userId, user.getBalance());
+
+            // 차감 후의 현재 잔액 반환
+            return user.getBalance();
+        } catch (Exception e) {
+            log.error("[UserService] 잔액 차감 실패 >> User ID: {}, Amount: {}", userId, amount, e);
             throw e;
         }
     }
