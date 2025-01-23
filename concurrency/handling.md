@@ -127,7 +127,7 @@ public class Seat {
     * 트랜잭션이나 복잡한 상태 관리가 필요 없고, 일정 시간 후 자동 해제가 가능하므로 관리 비용 감소
     * 단일 노드 환경에서도 간단히 적용 가능
 
-<figure><img src="../.gitbook/assets/Redis Simple Lock.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/Redis Simple Lock (1).png" alt=""><figcaption></figcaption></figure>
 
 * **포인트 충전 및 사용**:
   * **Redis 분산 락 중 Pub/Sub**:
@@ -135,4 +135,4 @@ public class Seat {
     * 충전 이벤트를 구독한 프로세스들이 즉시 업데이트를 반영할 수 있어 데이터 일관성과 실시간성 증가
     * 복잡한 충돌 감지 로직 없이 자연스럽게 요청 순서가 보장됨
 
-<figure><img src="../.gitbook/assets/Redis PubSub Lock.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/Redis PubSub.png" alt=""><figcaption></figcaption></figure>
