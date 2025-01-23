@@ -9,7 +9,9 @@ public enum BalanceErrorCode implements ErrorCode {
     BALANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "BALANCE_NOT_FOUND", "잔액 정보를 찾을 수 없습니다."),
     BALANCE_INSUFFICIENT(HttpStatus.BAD_REQUEST, "BALANCE_INSUFFICIENT", "잔액이 부족합니다."),
     BALANCE_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "BALANCE_UPDATE_FAILED", "잔액 업데이트에 실패했습니다."),
-    BALANCE_LOCK_FAILED(HttpStatus.CONFLICT, "BALANCE_LOCK_FAILED", "잔액 잠금 처리에 실패했습니다.");
+    BALANCE_LOCK_FAILED(HttpStatus.CONFLICT, "BALANCE_LOCK_FAILED", "잔액 잠금 처리에 실패했습니다."),
+    INVALID_CHARGE_AMOUNT(HttpStatus.BAD_REQUEST, "INVALID_DEDUCT_AMOUNT", "충전 금액은 0보다 커야 합니다."),
+    INVALID_DEDUCT_AMOUNT(HttpStatus.BAD_REQUEST, "INVALID_DEDUCT_AMOUNT", "사용 금액은 0보다 커야 합니다.");
 
     private final HttpStatus httpStatus;
     private final String name;
