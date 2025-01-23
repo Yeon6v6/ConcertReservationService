@@ -1,6 +1,8 @@
 package kr.hhplus.be.server.api.concert.application.service;
 
 import kr.hhplus.be.server.api.common.exception.CustomException;
+import kr.hhplus.be.server.api.common.lock.RedisLockManager;
+import kr.hhplus.be.server.api.common.lock.annotation.RedisLock;
 import kr.hhplus.be.server.api.common.type.SeatStatus;
 import kr.hhplus.be.server.api.concert.application.dto.response.ConcertSeatResult;
 import kr.hhplus.be.server.api.concert.domain.entity.ConcertSchedule;
@@ -62,9 +64,10 @@ public class ConcertService {
      * 좌석 예약
      */
     @Transactional
+    @RedisLock(prefix = "seat:", key = "#seatId")
     public ConcertSeatResult reserveSeat(Long seatId) {
         try {
-            Seat seat = seatRepository.findByIdWithLock(seatId)
+            Seat seat = seatRepository.findById(seatId)
                     .orElseThrow(() -> new CustomException(SeatErrorCode.SEAT_NOT_FOUND));
 
             seat.reserve(); // 좌석 상태 변경
@@ -74,7 +77,6 @@ public class ConcertService {
             updateConcertSoldOutStatus(seat.getConcertId(), seat.getScheduleDate());
 
             return ConcertSeatResult.from(reservedSeat);
-
         } catch (CustomException e) {
             log.error("[ConcertService] 좌석 예약 실패 >> Seat ID: {}", seatId, e);
             throw e;
@@ -87,7 +89,7 @@ public class ConcertService {
     @Transactional
     public ConcertSeatResult payForSeat(Long seatId) {
         try{
-            Seat seat = seatRepository.findByIdWithLock(seatId)
+            Seat seat = seatRepository.findById(seatId)
                     .orElseThrow(() -> new CustomException(SeatErrorCode.SEAT_NOT_FOUND));
 
             if (seat.getStatus() != SeatStatus.RESERVED) {
