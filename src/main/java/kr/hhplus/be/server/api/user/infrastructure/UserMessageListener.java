@@ -4,7 +4,6 @@ import kr.hhplus.be.server.api.common.lock.RedisLockManager;
 import kr.hhplus.be.server.api.common.lock.util.RedisPublisher;
 import kr.hhplus.be.server.api.common.lock.util.RedisSubscriber;
 import kr.hhplus.be.server.api.user.application.service.UserRequestHandler;
-import kr.hhplus.be.server.api.user.application.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
