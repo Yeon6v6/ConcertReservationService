@@ -4,7 +4,7 @@ icon: database
 
 # ERD 설계
 
-<figure><img src="../.gitbook/assets/ERD (5).png" alt=""><figcaption><p>ERD</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/ERD%20(5).png" alt=""><figcaption><p>ERD</p></figcaption></figure>
 
 {% stepper %}
 {% step %}

@@ -1,6 +1,6 @@
 # Table of contents
 
-* [콘서트 예약 시스템 🎫](README.md)
+* [콘서트 예약 시스템 🎫](../README.md)
 
 ## 요구사항 분석 자료 <a href="#step5" id="step5"></a>
 

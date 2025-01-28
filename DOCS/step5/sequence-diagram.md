@@ -189,7 +189,7 @@ sequenceDiagram
 **좌석 결제 요청**
 {% endhint %}
 
-<figure><img src="../.gitbook/assets/8. 좌석 결제 요청 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/8.%20좌석%20결제%20요청%20(1).png" alt=""><figcaption></figcaption></figure>
 
 ```mermaid
 sequenceDiagram
