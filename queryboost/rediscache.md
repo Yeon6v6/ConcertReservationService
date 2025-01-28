@@ -1,39 +1,56 @@
-# Redis 및 캐싱을 활용한 성능 개선
+# Redis를 사용한 캐싱 전략
 
-## **1. 문제 정의**
+### 캐시(Cache)란?
 
-### **1.1 성능 저하의 원인**
+원본 저장소보다 빠르게 가져올 수 있는 임시 데이터 저장소
 
-* **반복 조회** : 동일한 쿼리가 다수의 클라이언트로부터 반복적으로 호출
-* **대량 데이터 처리** : 쿼리에서 대량의 데이터 필터링
-* **DB 직접 접근** : 데이터베이스에 대한 직접 접근으로 인한 부하
+### 캐싱(Caching)이란?
 
-### **1.2 대상 쿼리**
+캐시(Cache, 임시 데이터 저장소)에 접근해서 데이터를 빠르게 가져오는 방식
 
-1. `findByConcertIdAndIsSoldOut`: 특정 콘서트의 매진 여부 확인
-2. `findSchedule`: 특정 콘서트 일정 정보를 조회
-3. `findAvailableSeatList`: 특정 콘서트 일정의 예약 가능한 좌석 **목록**을 조회
-4. `countAvailableSeats`: 특정 콘서트 일정의 예약 가능한 좌석 **개수**를 조회
+<figure><img src="../.gitbook/assets/image (23).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
-## **2. 해결 방안 : 캐싱 및 Redis 활용**
+## 데이터를 캐싱할 때 사용하는 전략
 
-### **2.1 캐싱 전략**
+### 1. Write-Through
 
-* **콘서트(좌석)  정보조회**
-  * 읽기 많은 데이터 : 콘서트 정보
-    * **`Read Through`** : 스케줄은 변경이 적고, 읽기 요청이 많으므로 적합
-* **좌석 예약**
-  * 읽기 많은 데이터 : 예약 가능한 좌석 상태
-    * `C`**`ache Aside`**  : 좌석 상태는 자주 변경되므로, 데이터베이스에서 최신 상태를 가져오고 캐시를 갱신
-  * 좌석 상태 업데이트 : 좌석 상태 변경
-    * **`Write Through`** : 좌석 예약 시 캐시와 데이터베이스를 동시에 업데이트하여 일관성 보장
+* **설명** : 데이터를 데이터베이스에 저장하는 동시에 캐시에도 저장
+* **활용 사례** : 읽기와 쓰기 작업이 균등하거나, 데이터 동기화가 중요한 경우
+*   **예시 코드**
 
-**(1) Read Through**
+    ```java
+    public void saveConcertSchedule(ConcertSchedule schedule) {
+        concertScheduleRepository.save(schedule);
+        redisTemplate.opsForValue().set("concertSchedule:" + schedule.getId(), schedule);
+    }
+    ```
+* **특징**
+  * 데이터베이스와 캐시가 항상 동기화됨
+  * 쓰기 작업마다 캐시 업데이트
 
-* 데이터 요청 시 캐시에 먼저 접근하며, 캐시에 데이터가 없으면 데이터베이스에서 조회 후 캐시에 저장
-*   예시 코드
+### 2. Write-Behind(Back)
+
+* **설명** : 데이터를 캐시에 먼저 쓰고, 이후 비동기적으로 데이터베이스에 저장
+* **활용 사례** : 데이터 일관성 요구가 낮고, 쓰기 연산 빈도가 매우 높은 경우
+*   **예시 코드**
+
+    ```java
+    public void writeBackSchedule(ConcertSchedule schedule) {
+        redisTemplate.opsForValue().set("concertSchedule:" + schedule.getId(), schedule);
+        asyncDatabaseSave(schedule);
+    }
+    ```
+* **특징**
+  * 데이터베이스 부하를 줄일 수 있음
+  * 데이터 손실 가능성을 고려해야 함
+
+### 3. Read-Through
+
+* **설명** : 데이터 요청 시 캐시에 먼저 접근하며, 캐시에 데이터가 없으면 데이터베이스에서 조회 후 캐시에 저장
+* **활용 사례** : 읽기 비율이 매우 높고 데이터 변경이 빈번하지 않은 경우.
+*   **예시 코드**
 
     ```java
     @Cacheable(value = "concertScheduleCache", key = "#concertId + '-' + #isSoldOut")
@@ -41,110 +58,48 @@
         return concertScheduleRepository.findByConcertIdAndIsSoldOut(concertId, isSoldOut);
     }
     ```
+* **특징**
+  * 데이터 로드와 캐싱이 통합되어 관리.
+  * 캐시 미스가 발생하면 DB에서 가져와 자동으로 캐시에 저장.
 
-***
+### 4. ⭐Cache-Aside (Look Aside / Lazy Loading) <a href="#cache-aside" id="cache-aside"></a>
 
-**(2) Cache Aside**
-
-* 어플리케이션에서 직접 캐시를 관리하며, 캐시에 데이터가 없으면 DB에서 조회 후 캐시에 저장
-*   예시 코드
+* **설명 :** 어플리케이션에서 직접 캐시를 관리하며, 캐시에 데이터가 없으면 DB에서 조회 후 캐시에 저장
+* **활용 사례** : 데이터 변경이 빈번하지만, 변경된 데이터만 캐시를 무효화해야 하는 경우
+*   **예시 코드**
 
     ```java
-    public long countAvailableSeats(Long concertId, LocalDate scheduleDate) {
+    public List<Seat> findAvailableSeats(Long concertId, LocalDate scheduleDate) {
         String key = "availableSeats:" + concertId + ":" + scheduleDate;
-
-        // 캐시 조회
-        Long cachedCount = redisTemplate.opsForValue().get(key);
-        if (cachedCount != null) {
-            return cachedCount;
+        List<Seat> seats = (List<Seat>) redisTemplate.opsForValue().get(key);
+        if (seats == null) {
+            seats = seatRepository.findAvailableSeatList(concertId, scheduleDate);
+            redisTemplate.opsForValue().set(key, seats, 1, TimeUnit.HOURS);
         }
-
-        // 캐시에 데이터가 없으면 DB에서 조회 후 저장
-        long count = seatRepository.countAvailableSeats(concertId, scheduleDate);
-        redisTemplate.opsForValue().set(key, count, 1, TimeUnit.HOURS);
-
-        return count;
+        return seats;
     }
     ```
+* **특징**
+  * 읽기 요청이 많고, 데이터 변경 시 캐시를 무효화하는 로직이 필요
+  *   전달방식
 
-***
+      * 캐시에 데이터가 있을 경우 (= Cache Hint)
 
-**(3) Write Through**
+      <figure><img src="../.gitbook/assets/image (28).png" alt=""><figcaption><p>Cache Hint</p></figcaption></figure>
 
-* 데이터를 데이터베이스에 쓰는 동시에 캐시에 저장
-*   예시 코드
+      * 캐시에 데이터가 없을 경우 (= Cache Miss)
 
-    ```java
-    public void updateSeatStatus(Long seatId, String status) {
-        seatRepository.updateSeatStatus(seatId, status);
-        redisTemplate.opsForValue().set("seat:" + seatId, status);
-    }
-    ```
+      <figure><img src="../.gitbook/assets/image (27).png" alt=""><figcaption><p>Cache Miss</p></figcaption></figure>
 
-***
+### 5. (번외) Write Around
 
+* **설명**&#x20;
+  * 데이터를 캐시에 직접 쓰지 않고, 데이터베이스에만 저장하는 방식
+  * 캐시에는 데이터가 존재하지 않으며, 해당 데이터가 나중에 조회될 때 처음으로 캐시에 적재됨
+  * 데이터 **조회 시점에 캐싱**이 이루어지며, 데이터 쓰기 작업은 캐시와 무관하게 데이터베이스에만 수행
+* **활용 사례** : 읽기 빈도가 낮거나, 일관성이 중요한 데이터 또는 쓰기 연산이 빈번한 데이터 (자주 쓰이지만 읽기 빈도는 낮은 경우)
+* 특징
+  *   전달방식
 
+      <figure><img src="../.gitbook/assets/image (26).png" alt=""><figcaption></figcaption></figure>
 
-### **2.2 Redis를 활용한 캐시 최적화**
-
-**(1) 캐시 TTL(Time-To-Live) 설정**
-
-* 데이터 유효 기간을 설정하여 캐시된 데이터가 오래 사용되지 않도록 함
-* 예: `countAvailableSeats` 결과를 1시간 동안 캐싱
-
-```java
-redisTemplate.opsForValue().set(key, value, 1, TimeUnit.HOURS);
-```
-
-**(2) 캐시 갱신**
-
-* 데이터 변경 시 캐시를 갱신하여 데이터 일관성 유지.
-
-```java
-jpublic void updateSeat(Long seatId, String status) {
-    seatRepository.updateStatus(seatId, status);
-    redisTemplate.delete("seat:" + seatId); // 캐시 삭제
-}
-```
-
-***
-
-### **2.3 캐시 스탬피드 문제 해결**
-
-1.  **Mutex Lock**
-
-    * 하나의 클라이언트만 데이터베이스에서 데이터를 가져오도록 잠금을 설정
-
-    ```java
-    String lockKey = "lock:" + key;
-    if (redisTemplate.opsForValue().setIfAbsent(lockKey, "1", 5, TimeUnit.SECONDS)) {
-        try {
-            // 데이터베이스에서 데이터 가져오기
-            String value = database.findDataByKey(key);
-            redisTemplate.opsForValue().set(key, value, 1, TimeUnit.HOURS);
-        } finally {
-            redisTemplate.delete(lockKey); // 잠금 해제
-        }
-    }
-    ```
-2.  **TTL 분산**
-
-    * 키마다 서로 다른 TTL을 설정하여 캐시 만료 시 대량 요청 방지
-
-    ```java
-    jredisTemplate.opsForValue().set(key, value, randomTTL(), TimeUnit.SECONDS);
-    ```
-3.  **백그라운드 캐시 갱신**
-
-    * 데이터 만료 전에 백그라운드에서 캐시를 갱신.
-
-    ```java
-    @Scheduled(fixedRate = 60000)
-    public void refreshCache() {
-        List<String> keys = getFrequentlyUsedKeys();
-        keys.forEach(key -> {
-            String value = database.findDataByKey(key);
-            redisTemplate.opsForValue().set(key, value);
-        });
-    }
-    ```

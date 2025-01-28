@@ -1,6 +1,6 @@
 # Table of contents
 
-* [콘서트 예약 시스템 🎫](README.md)
+* [콘서트 예약 시스템 🎫](./)
 
 ## 요구사항 분석 자료 <a href="#step5" id="step5"></a>
 
@@ -9,7 +9,7 @@
 
 ## 설계 자료 <a href="#step6" id="step6"></a>
 
-* [ERD 설계](step6/erd.md)
+* [ERD 설계](../docs/step6/design.md)
 * [API 명세서](https://cheese-2.gitbook.io/hh_crs_api/)
 
 ## Swagger
