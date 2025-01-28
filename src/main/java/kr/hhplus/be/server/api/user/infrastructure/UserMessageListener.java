@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.api.user.infrastructure;
 
 import kr.hhplus.be.server.api.common.lock.RedisLockManager;
+import kr.hhplus.be.server.api.common.lock.util.RedisPublisher;
 import kr.hhplus.be.server.api.common.lock.util.RedisSubscriber;
 import kr.hhplus.be.server.api.user.application.service.UserRequestHandler;
 import kr.hhplus.be.server.api.user.application.service.UserService;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserMessageListener implements RedisSubscriber {
     private final RedisTemplate<String, String> redisTemplate;
+    private final RedisPublisher redisPublisher;
     private final UserRequestHandler userRequestHandler;
     private final RedisLockManager lockManager;
 
@@ -45,7 +47,7 @@ public class UserMessageListener implements RedisSubscriber {
             }
 
             // COMPLETE 메시지 발행
-            redisTemplate.convertAndSend("user:balance", String.format("COMPLETE:%d", userId));
+            redisPublisher.publish("user:balance", String.format("COMPLETE:%d", userId));
 
         }finally {
             lockManager.unlock(lockKey);
