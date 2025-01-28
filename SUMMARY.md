@@ -26,6 +26,7 @@
 
 ## 쿼리 성능 개선 <a href="#queryboost" id="queryboost"></a>
 
-* [쿼리 성능 현황](queryboost/curquerystatus.md)
 * [Redis를 사용한 캐싱 전략](queryboost/rediscache.md)
+* [캐시 스탬피드(Cache Stampede) 현상](queryboost/cachestampede.md)
+* [쿼리 성능 현황](queryboost/curquerystatus.md)
 * [Redis 및 캐싱을 활용한 성능 개선](queryboost/rediscache-1.md)
