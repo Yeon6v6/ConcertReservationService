@@ -11,7 +11,7 @@
 
 <figure><img src="../.gitbook/assets/image.png" alt=""><figcaption><p>캐시 스탬피드 현상<br><strong>캐시 만료 → 다수의 요청 → 데이터베이스 부하 증가 → 캐시 쓰기 경쟁</strong></p></figcaption></figure>
 
-> * 어플리케이션이 [Cache Aside](rediscache.md#cache-aside)방식을 사용하여 키를 관리하는 경우에서  발생
+> * 어플리케이션이 [Cache Aside](rediscache-1.md#cache-aside)방식을 사용하여 키를 관리하는 경우에서  발생
 > * 캐시된 데이터가 만료되었을 때 DB에 접근하여 데이터를 가져와서 캐시에 다시 저장하게 되는데, \
 >   여러 어플리케이션이 동시에 특정 키가 만료되었을 경우 동시에 DB에 접근하여 데이터를 가져오려고 시도하는 과정에서 부하가 발생한다.
 

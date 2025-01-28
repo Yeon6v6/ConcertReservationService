@@ -115,7 +115,7 @@ public class Seat {
 
 _분석 시에는 좌석에 대한 등급이 있다고 가정했지만, 실제 구현에는 동일한 등급이라고 가정함_
 
-<figure><img src="../.gitbook/assets/Redis Simple Lock (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Redis Simple Lock (1).png" alt=""><figcaption></figcaption></figure>
 
 * **포인트 충전 및 사용**:
   * **Redis 분산 락 중 Pub/Sub**:
@@ -125,4 +125,4 @@ _분석 시에는 좌석에 대한 등급이 있다고 가정했지만, 실제 �
 
 _아래의 흐름은 한 사용자에 대한 여러 요청을 기반으로 구현했지만, 실제로는 여러 사람의 여러 요청이 아래와 같은 형태로 병렬처리 됨_
 
-<figure><img src="../.gitbook/assets/Redis PubSub.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Redis PubSub.png" alt=""><figcaption></figcaption></figure>
