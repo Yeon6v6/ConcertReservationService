@@ -1,4 +1,4 @@
-name: Sync README to GitBook
+name: Sync Files to GitBook
 
 on:
   push:
@@ -14,21 +14,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. GitBook으로 README.md 업로드
-      - name: Sync README.md to GitBook
+      # 2. README.md를 제외한 파일들을 DOCS 디렉토리로 이동
+      - name: Move all files except README.md to DOCS
+        run: |
+          mkdir -p DOCS
+          find . -maxdepth 1 -type f ! -name "README.md" -exec mv {} DOCS/ \;
+
+      # 3. GitBook으로 DOCS 폴더 하위 파일 업로드
+      - name: Sync DOCS folder to GitBook
         env:
           GITBOOK_API_TOKEN: ${{ secrets.GITBOOK_API_TOKEN }}
           GITBOOK_SPACE_ID: ${{ secrets.GITBOOK_SPACE_ID }}
         run: |
-          curl -X POST \
-            -H "Authorization: Bearer $GITBOOK_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "files": [
-                {
-                  "path": "README.md",
-                  "title": "Introduction"
-                }
-              ]
-            }' \
-            https://api.gitbook.com/v1/spaces/$GITBOOK_SPACE_ID/content
+          for file in DOCS/*; do
+            curl -X POST \
+              -H "Authorization: Bearer $GITBOOK_API_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"files\": [
+                  {
+                    \"path\": \"${file}\",
+                    \"title\": \"$(basename ${file})\"
+                  }
+                ]
+              }" \
+              https://api.gitbook.com/v1/spaces/$GITBOOK_SPACE_ID/content
+          done
