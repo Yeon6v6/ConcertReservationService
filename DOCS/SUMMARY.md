@@ -1,6 +1,6 @@
 # Table of contents
 
-* [콘서트 예약 시스템 🎫](../README.md)
+* [콘서트 예약 시스템 🎫](README.md)
 
 ## 요구사항 분석 자료 <a href="#step5" id="step5"></a>
 
@@ -23,3 +23,10 @@
 ## 동시성 처리 <a href="#concurrency" id="concurrency"></a>
 
 * [동시성 이슈 및 제어 방식 분석](concurrency/handling.md)
+
+## 쿼리 성능 개선 <a href="#queryboost" id="queryboost"></a>
+
+* [Redis를 사용한 캐싱 전략](queryboost/rediscache.md)
+* [캐시 스탬피드(Cache Stampede) 현상](queryboost/cachestampede.md)
+* [쿼리 성능 현황](queryboost/curquerystatus.md)
+* [Redis 및 캐싱을 활용한 성능 개선](queryboost/rediscache-1.md)
