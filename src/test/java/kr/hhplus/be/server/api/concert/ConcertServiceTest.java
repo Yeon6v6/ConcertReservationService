@@ -86,7 +86,8 @@ class ConcertServiceTest {
         // Given
         Long seatId = 1L;
         Seat seat = Seat.builder().id(seatId).seatNumber(1).status(SeatStatus.AVAILABLE).concertId(1L).scheduleDate(LocalDate.of(2025, 1, 10)).build();
-        when(seatRepository.findByIdWithLock(seatId)).thenReturn(Optional.of(seat));
+//        when(seatRepository.findByIdWithLock(seatId)).thenReturn(Optional.of(seat));
+        when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
         when(seatRepository.save(any(Seat.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
@@ -102,7 +103,8 @@ class ConcertServiceTest {
         // Given
         Long seatId = 1L;
         Seat seat = Seat.builder().id(seatId).seatNumber(1).status(SeatStatus.RESERVED).concertId(1L).scheduleDate(LocalDate.of(2025, 1, 10)).build();
-        when(seatRepository.findByIdWithLock(seatId)).thenReturn(Optional.of(seat));
+//        when(seatRepository.findByIdWithLock(seatId)).thenReturn(Optional.of(seat));
+        when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
         when(seatRepository.save(any(Seat.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
@@ -118,7 +120,8 @@ class ConcertServiceTest {
         // Given
         Long seatId = 1L;
         Seat seat = Seat.builder().id(seatId).seatNumber(1).status(SeatStatus.RESERVED).concertId(1L).scheduleDate(LocalDate.of(2025, 1, 10)).build();
-        when(seatRepository.findByIdWithLock(seatId)).thenReturn(Optional.of(seat));
+//        when(seatRepository.findByIdWithLock(seatId)).thenReturn(Optional.of(seat));
+        when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
 
         // When & Then
         CustomException exception = assertThrows(CustomException.class, () -> concertService.reserveSeat(seatId));

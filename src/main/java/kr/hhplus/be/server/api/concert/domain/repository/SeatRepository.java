@@ -19,9 +19,11 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
     @Query("SELECT s FROM Seat s WHERE s.concertId = :concertId AND s.scheduleDate = :scheduleDate AND s.status = 'AVAILABLE'")
     List<Seat> findAvailableSeatList(@Param("concertId") Long concertId, @Param("scheduleDate") LocalDate scheduleDate);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    /*@Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({@QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000")}) //동시성이 많을 수 있으므로 락 대기시간 설정
-    Optional<Seat> findByIdWithLock(@Param("seatId") Long seatId);
+    Optional<Seat> findByIdWithLock(@Param("seatId") Long seatId);*/
+
+    Optional<Seat> findById(@Param("seatId") Long Id); // 비관적 락 제거
 
     @Query("SELECT COUNT(s) FROM Seat s WHERE s.concertId = :concertId AND s.scheduleDate = :scheduleDate AND s.status = 'AVAILABLE'")
     long countAvailableSeats(@Param("concertId") Long concertId, @Param("scheduleDate") LocalDate scheduleDate);
