@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.api.reservation.application.facade;
 
 import kr.hhplus.be.server.api.common.exception.CustomException;
+import kr.hhplus.be.server.api.common.lock.annotation.RedisLock;
 import kr.hhplus.be.server.api.concert.application.dto.response.ConcertSeatResult;
 import kr.hhplus.be.server.api.concert.exception.SeatErrorCode;
 import kr.hhplus.be.server.api.reservation.application.dto.command.ReservationCommand;
@@ -29,6 +30,7 @@ public class ReservationFacade {
      * - ConcertService를 통해 좌석 예약
      * - ReservationService를 통해 예약 정보 생성
      */
+    @RedisLock(prefix = "seat:", key = "#reservationCmd.seatId")
     @Transactional
     public ReservationResult reserveSeat(ReservationCommand reservationCmd) {
         // 1. 좌석 상태 확인
@@ -47,10 +49,15 @@ public class ReservationFacade {
      * - userService를 통해 결제 처리
      * - ReservationService를 통해 상태 업데이트
      */
+    @RedisLock(prefix = "seat:", key = "#paymentCmd.seatId")
     @Transactional
     public PaymentResult payReservation(PaymentCommand paymentCmd) {
         // 1. 예약 조회
         Reservation reservation = reservationService.findById(paymentCmd.reservationId());
+
+        if (reservation == null) {
+            throw new CustomException(SeatErrorCode.SEAT_NOT_RESERVED);
+        }
 
         // 2. 예약 유효성 검증(금액 및 예약상태)
         reservation.validate();
