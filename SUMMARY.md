@@ -30,3 +30,4 @@
 * [캐시 스탬피드(Cache Stampede) 현상](queryboost/cachestampede.md)
 * [쿼리 성능 현황](queryboost/curquerystatus.md)
 * [Redis 및 캐싱을 활용한 성능 개선](queryboost/rediscache-1.md)
+* [응답 속도 및 쿼리 실행 비교](queryboost/undefined.md)
