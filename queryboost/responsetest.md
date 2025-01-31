@@ -33,13 +33,15 @@
 
 ### **요청 및 응답 속도 조회**
 
-Postman으로 요청 할 경우 두번째 요청부터는 속도가 줄어듦(Postman 자체 캐시때문)&#x20;
+Postman으로 요청 할 경우 두번째 요청부터는 속도가 줄어듦&#x20;
+
+_⇒ Postman 자체 캐시_ _때문에 속도가 줄어들게 된다.  Postman의  캐시 삭제해도 동일하지만, 웹페이지에서 캐시 및 쿠키를 삭제해가며 호출한 경우는 조회 속도가 빨라지진 않았다._
 
 <figure><img src="../.gitbook/assets/image (4).png" alt=""><figcaption><p>최초 요청(조회)</p></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/image (9).png" alt=""><figcaption><p>이후 4회 연속 조회 시</p></figcaption></figure>
 
-다만,  동일한 요청을 반복하더라도 아래의 로그와 같이 매번 DB에 접근하여 조회하기 때문에 요청마다 쿼리가 발생
+Postman호출하여 속도가 줄어들더라도,  동일한 요청을 반복하지만 아래의 로그와 같이 매번 DB에 접근하여 조회하기 때문에 요청마다 쿼리가 발생
 
 ### **요청 및 응답 / 쿼리 실행 로그**
 
@@ -111,7 +113,7 @@ CacheInterceptor - Creating cache entry for key 'concerts:31' in cache(s) [avail
 [LoggingFilter] 요청 처리 시간 : 251 ms
 ```
 
-최초로 요청 할 경우 Cahce Miss인 상태이기 때문에 요청이 들어 온 경우 DB에서 조회 진행하여 쿼리 수행 로그가 기록됨
+최초로 요청 할 경우 `Cahce Miss`인 상태이기 때문에 요청이 들어 온 경우 DB에서 조회 진행하여 쿼리 수행 로그가 기록됨
 
 1. `No cache` :  캐시 저장소를 조회했으나 데이터가 없음
 2. 따라서 기존  DB 조회 로직 실행
@@ -147,7 +149,7 @@ CacheInterceptor - Cache entry for key 'concerts:31' found in cache(s) [availabl
 
 `Cache entry` :  캐시 저장소를 조회하여 데이터 갖고오기
 
-Cache에서 데이터를 갖고왔기 때문에, <mark style="color:red;">쿼리 수행 로그가 따로 기록되지 않았다</mark>.
+Cache에서 데이터를 갖고왔기 때문에, <mark style="color:red;">쿼리 수행 로그가 따로 기록되지 않는다</mark>.
 
 ***
 

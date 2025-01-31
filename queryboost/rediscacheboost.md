@@ -1,4 +1,4 @@
-# Redis 및 캐싱을 활용한 성능 개선
+# Redis 및 캐싱을 적용한 성능 개선
 
 ## **1. 문제 정의**
 
@@ -8,7 +8,7 @@
 * **대량 데이터 처리** : 쿼리에서 대량의 데이터 필터링
 * **DB 직접 접근** : 데이터베이스에 대한 직접 접근으로 인한 부하
 
-### **1.2 대상 쿼리**
+### **1.2 대상 쿼리(**[**쿼리 성능 현황**](curquerystatus.md)**)**
 
 1. `findByConcertIdAndIsSoldOut`: 특정 콘서트의 매진 여부 확인
 2. `findSchedule`: 특정 콘서트 일정 정보를 조회
@@ -107,44 +107,3 @@ jpublic void updateSeat(Long seatId, String status) {
 }
 ```
 
-***
-
-### **2.3 캐시 스탬피드 문제 해결**
-
-1.  **Mutex Lock**
-
-    * 하나의 클라이언트만 데이터베이스에서 데이터를 가져오도록 잠금을 설정
-
-    ```java
-    String lockKey = "lock:" + key;
-    if (redisTemplate.opsForValue().setIfAbsent(lockKey, "1", 5, TimeUnit.SECONDS)) {
-        try {
-            // 데이터베이스에서 데이터 가져오기
-            String value = database.findDataByKey(key);
-            redisTemplate.opsForValue().set(key, value, 1, TimeUnit.HOURS);
-        } finally {
-            redisTemplate.delete(lockKey); // 잠금 해제
-        }
-    }
-    ```
-2.  **TTL 분산**
-
-    * 키마다 서로 다른 TTL을 설정하여 캐시 만료 시 대량 요청 방지
-
-    ```java
-    jredisTemplate.opsForValue().set(key, value, randomTTL(), TimeUnit.SECONDS);
-    ```
-3.  **백그라운드 캐시 갱신**
-
-    * 데이터 만료 전에 백그라운드에서 캐시를 갱신.
-
-    ```java
-    @Scheduled(fixedRate = 60000)
-    public void refreshCache() {
-        List<String> keys = getFrequentlyUsedKeys();
-        keys.forEach(key -> {
-            String value = database.findDataByKey(key);
-            redisTemplate.opsForValue().set(key, value);
-        });
-    }
-    ```
