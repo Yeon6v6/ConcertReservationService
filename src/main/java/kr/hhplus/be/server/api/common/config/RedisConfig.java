@@ -19,11 +19,6 @@ public class RedisConfig {
     private int port;
 
     @Bean
-    public LettuceConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(new RedisStandaloneConfiguration(host, port));
-    }
-
-    @Bean
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
@@ -33,5 +28,10 @@ public class RedisConfig {
         redisTemplate.setValueSerializer(new StringRedisSerializer());
 
         return redisTemplate;
+    }
+
+    @Bean
+    public LettuceConnectionFactory redisConnectionFactory() {
+        return new LettuceConnectionFactory(new RedisStandaloneConfiguration(host, port));
     }
 }
