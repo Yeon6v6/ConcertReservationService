@@ -63,8 +63,6 @@ public class ConcertService {
     /**
      * 좌석 예약
      */
-    @Transactional
-    @RedisLock(prefix = "seat:", key = "#seatId")
     public ConcertSeatResult reserveSeat(Long seatId) {
         try {
             Seat seat = seatRepository.findById(seatId)
@@ -84,9 +82,8 @@ public class ConcertService {
     }
 
     /**
-     * 결제로 상태 업데이트
+     * 결제로 상태 업데이트 (Facade에서 트랜잭션 관리)
      */
-    @Transactional
     public ConcertSeatResult payForSeat(Long seatId) {
         try{
             Seat seat = seatRepository.findById(seatId)

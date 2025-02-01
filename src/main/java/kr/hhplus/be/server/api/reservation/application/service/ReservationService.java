@@ -37,7 +37,6 @@ public class ReservationService {
     /**
      * 예약 생성(좌석 예약)
      */
-    @Transactional
     public ReservationResult createReservation(ReservationCommand command) {
         log.info("[ReservationService] 예약 생성 시작 >> User ID: {}, Seat ID: {}", command.userId(), command.seatId());
 
