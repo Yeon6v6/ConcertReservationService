@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.response.ApiResponse;
 import kr.hhplus.be.server.api.common.type.TokenStatus;
+import kr.hhplus.be.server.api.token.application.dto.response.RedisTokenResult;
 import kr.hhplus.be.server.api.token.application.dto.response.TokenResult;
 import kr.hhplus.be.server.api.token.application.service.TokenService;
 import kr.hhplus.be.server.api.token.exception.TokenErrorCode;
@@ -35,11 +36,13 @@ public class TokenController {
             }
 
             // 토큰 발급
-            TokenResult tokenResult = tokenService.issueToken(request.getUserId());
+            RedisTokenResult tokenResult = tokenService.issueToken(request.getUserId());
+
+            System.out.println("TokenResult: " + tokenResult);
 
             // 대기열 순서와 대기열 통과 여부 계산
             Long queueSort = tokenResult.id(); // ID를 대기열 순서로 사용
-            boolean hasPassedQueue = tokenResult.status() == TokenStatus.ACTIVE;
+            boolean hasPassedQueue = tokenResult.status().equals(TokenStatus.ACTIVE.toString());
 
             // TokenIssueResponse 생성
             TokenIssueResponse tokenIssueResponse = TokenIssueResponse.from(tokenResult, queueSort, hasPassedQueue);
