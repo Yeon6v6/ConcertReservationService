@@ -1,8 +1,6 @@
 package kr.hhplus.be.server.api.concert.application.service;
 
 import kr.hhplus.be.server.api.common.exception.CustomException;
-import kr.hhplus.be.server.api.common.lock.RedisLockManager;
-import kr.hhplus.be.server.api.common.lock.annotation.RedisLock;
 import kr.hhplus.be.server.api.common.type.SeatStatus;
 import kr.hhplus.be.server.api.concert.application.dto.response.ConcertSeatResult;
 import kr.hhplus.be.server.api.concert.domain.entity.ConcertSchedule;
@@ -14,8 +12,9 @@ import kr.hhplus.be.server.api.concert.domain.repository.SeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,6 +31,7 @@ public class ConcertService {
     /**
      * 특정 콘서트의 예약 가능한 날짜 조회
      */
+    @Cacheable(value = "availableDates", key = "'concerts:' + #concertId", cacheManager = "cacheManager")
     public List<LocalDate> getAvailableDateList(Long concertId){
         try {
             return concertScheduleRepository.findByConcertIdAndIsSoldOut(concertId, false)
@@ -48,6 +48,7 @@ public class ConcertService {
     /**
      * 특정 날짜의 예약 가능한 좌석 조회
      */
+    @Cacheable(value = "availableSeats", key = "'concert:' + #concertId + ':schedule:' + #scheduleDate", cacheManager = "cacheManager")
     public List<ConcertSeatResult> getAvailableSeatList(Long concertId, LocalDate scheduleDate) {
         try {
             return seatRepository.findAvailableSeatList(concertId, scheduleDate)
@@ -63,6 +64,7 @@ public class ConcertService {
     /**
      * 좌석 예약
      */
+    @CacheEvict(value = "availableSeats", key = "'concert:' + #seat.getConcertId() + ':schedule:' + #seat.getScheduleDate()") // 캐시 무효화
     public ConcertSeatResult reserveSeat(Long seatId) {
         try {
             Seat seat = seatRepository.findById(seatId)
@@ -84,6 +86,7 @@ public class ConcertService {
     /**
      * 결제로 상태 업데이트 (Facade에서 트랜잭션 관리)
      */
+    @CacheEvict(value = "availableSeats", key = "'concert:' + #seat.getConcertId() + ':schedule:' + #seat.getScheduleDate()") //캐시 무효화
     public ConcertSeatResult payForSeat(Long seatId) {
         try{
             Seat seat = seatRepository.findById(seatId)

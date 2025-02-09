@@ -1,6 +1,5 @@
 package kr.hhplus.be.server.api.reservation.application.service;
 
-import jakarta.transaction.Transactional;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.reservation.application.dto.command.ReservationCommand;
 import kr.hhplus.be.server.api.reservation.application.dto.result.ReservationResult;

@@ -7,6 +7,7 @@ import kr.hhplus.be.server.api.concert.exception.SeatErrorCode;
 import kr.hhplus.be.server.api.reservation.application.dto.command.ReservationCommand;
 import kr.hhplus.be.server.api.reservation.application.dto.result.PaymentResult;
 import kr.hhplus.be.server.api.token.application.service.TokenService;
+import kr.hhplus.be.server.api.token.exception.TokenErrorCode;
 import kr.hhplus.be.server.api.user.application.service.UserService;
 import kr.hhplus.be.server.api.concert.application.service.ConcertService;
 import kr.hhplus.be.server.api.reservation.application.dto.command.PaymentCommand;
@@ -76,10 +77,14 @@ public class ReservationFacade {
         reservation.pay(paidAmount);
         reservationService.updateReservation(reservation);
 
-        // 6. 대기열 토큰 만료
-        tokenService.expireToken(reservation.getUserId());
+        // 7. 대기열 토큰 만료
+        // userId를 이용해 tokenId를 조회한 후, 무조건 토큰 만료 처리
+        Long tokenId = tokenService.getTokenIdByUserId(reservation.getUserId());
+        if (tokenId != null) {
+            tokenService.expireToken(tokenId);
+        }
 
-        // 7. PaymentResult 생성 및 반환
+        // 8. PaymentResult 생성 및 반환
         return new PaymentResult(
                 reservation.getId(),
                 seatResult.status(),

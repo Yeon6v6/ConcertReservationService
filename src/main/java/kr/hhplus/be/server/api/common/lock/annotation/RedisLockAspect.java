@@ -41,7 +41,7 @@ public class RedisLockAspect {
         }
 
         try {
-            //트랜잭션이 필요한 경우 `AopForTransaction`을 통해 실행
+            // 트랜잭션이 필요한 경우 `AopForTransaction`을 통해 실행
             if (method.isAnnotationPresent(Transactional.class)) {
                 return aopForTransaction.proceed(joinPoint);
             } else {
