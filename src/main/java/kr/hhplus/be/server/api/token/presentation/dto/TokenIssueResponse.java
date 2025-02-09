@@ -1,7 +1,6 @@
 package kr.hhplus.be.server.api.token.presentation.dto;
 
-import kr.hhplus.be.server.api.token.application.dto.response.TokenResult;
-import kr.hhplus.be.server.api.token.domain.entity.Token;
+import kr.hhplus.be.server.api.token.application.dto.response.RedisTokenResult;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -16,10 +15,10 @@ public class TokenIssueResponse {
     private LocalDateTime expiredAt; // 만료 시간 (Epoch Second)
     private boolean hasPassedQueue; // 대기열 통과 여부
 
-    public static TokenIssueResponse from(TokenResult tokenResult, Long queueSort, boolean hasPassedQueue) {
+    public static TokenIssueResponse from(RedisTokenResult redisTokenResult, Long queueSort, boolean hasPassedQueue) {
         return new TokenIssueResponse(
-                queueSort,
-                tokenResult.expiredAt(),
+                queueSort, // 대기열 순서
+                redisTokenResult.expiredAt(), // 만료 시간
                 hasPassedQueue
         );
     }

@@ -2,7 +2,7 @@ package kr.hhplus.be.server.api.token.infrastructure;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import kr.hhplus.be.server.api.token.application.service.TokenService;
+import kr.hhplus.be.server.api.token.domain.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -10,30 +10,35 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 @RequiredArgsConstructor
 public class TokenInterceptor implements HandlerInterceptor {
-
-    private final TokenService tokenService;
+    private final TokenRepository tokenRepository;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String tokenValue = request.getHeader("Authorization");
-
-
-        if (tokenValue == null || tokenValue.isEmpty()) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("토큰이 누락되었거나 잘못되었습니다.");
+        String tokenIdStr = request.getHeader("Authorization");
+        if (tokenIdStr == null) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return false;
         }
-
         try {
-            // TokenService를 통해 검증 및 만료 시간 (5분) 연장
-            tokenService.validateAndExtendToken(tokenValue);
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write(e.getMessage());
+            Long tokenId = Long.parseLong(tokenIdStr);
+
+            // TTL 검증 (연장 없이 단순 검증)
+            if (!tokenRepository.isValidToken(tokenId)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                return false;
+            }
+
+            // TTL 5분 연장 (모든 요청에서 연장)
+            boolean extended = tokenRepository.extendTokenTTL(tokenId);
+            if (!extended) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return false;
+            }
+
+            return true;
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return false;
         }
-
-        return true;
     }
-
 }

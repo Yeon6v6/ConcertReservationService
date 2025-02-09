@@ -69,7 +69,7 @@
 *   **예시 코드**
 
     ```java
-    public List<Seat> findAvailableSeats(Long concertId, LocalDate scheduleDate) {
+    public List<ConcertSeatResult> findAvailableSeatList(Long concertId, LocalDate scheduleDate) {
         String key = "availableSeats:" + concertId + ":" + scheduleDate;
         List<Seat> seats = (List<Seat>) redisTemplate.opsForValue().get(key);
         if (seats == null) {

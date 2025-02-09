@@ -2,133 +2,84 @@ package kr.hhplus.be.server.api.token.application.service;
 
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.TokenStatus;
-import kr.hhplus.be.server.api.token.application.dto.response.TokenResult;
-import kr.hhplus.be.server.api.token.domain.entity.Token;
+import kr.hhplus.be.server.api.token.application.dto.response.RedisTokenResult;
+import kr.hhplus.be.server.api.token.domain.repository.TokenQueueRepository;
 import kr.hhplus.be.server.api.token.domain.repository.TokenRepository;
-import kr.hhplus.be.server.api.token.domain.validator.TokenValidator;
 import kr.hhplus.be.server.api.token.exception.TokenErrorCode;
+import kr.hhplus.be.server.api.token.presentation.controller.TokenController;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class TokenService {
-    private static final Logger log = LoggerFactory.getLogger(TokenService.class);
-
     private final TokenRepository tokenRepository;
-    private final TokenValidator tokenValidator;
+    private final TokenQueueRepository tokenQueueRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(TokenService.class);
 
     /**
-     * 토큰 발급 (초기 상태는 PENDING / 대기시간 부여 안함)
+     * 토큰 발급 (상태: PENDING)
      */
-    public TokenResult issueToken(Long userId) {
-        try{
-            Token token = Token.builder()
-                    .userId(userId)
-                    .token(UUID.randomUUID().toString())
-                    .status(TokenStatus.PENDING)
-                    .createdAt(LocalDateTime.now())
-                    .build();
+    public RedisTokenResult issueToken(Long userId) {
+        logger.info("[TOKEN ISSUE] 사용자 {}가 토큰 발급을 요청함", userId);
 
-            Token savedToken = tokenRepository.save(token);
-
-            log.info("[TokenService] 토큰 발급 완료 >> User ID: {}, Token ID: {}, Token Value: {}", userId, token.getId(), token.getToken());
-            return TokenResult.from(savedToken);
-        } catch (Exception e) {
-            log.error("[TokenService] 토큰 발급 실패 >> User ID: {}", userId, e);
-            throw e;
+        if (isUserAlreadyInQueue(userId)) {
+            logger.error("[TOKEN ISSUE] 사용자 {}는 이미 대기열에 등록되어 있음", userId);
+            throw new CustomException(TokenErrorCode.USER_ALREADY_IN_QUEUE);
         }
+
+        // 토큰 ID 생성
+        Long tokenId = tokenRepository.generateTokenId();
+        String tokenValue = UUID.randomUUID().toString();
+        logger.info("[TOKEN ISSUE] 생성된 토큰 ID: {}, 사용자 ID: {}", tokenId, userId);
+
+        // Redis Hash에 토큰 정보 저장
+        tokenRepository.saveToken(tokenId, userId);
+        logger.debug("[TOKEN ISSUE] 토큰 정보 저장 완료: {}", tokenId);
+
+        // 대기열에 토큰 ID 추가
+        tokenQueueRepository.enqueue(tokenId, userId);
+        logger.info("[TOKEN ISSUE] 토큰 {}이(가) 대기열에 추가됨", tokenId);
+
+        // 대기 순위 조회
+        Long queuePosition = tokenQueueRepository.getQueuePosition(tokenId);
+        logger.info("[TOKEN ISSUE] 토큰 {}의 대기 순위: {}", tokenId, queuePosition);
+
+        if (queuePosition == null) {
+            logger.error("[TOKEN ISSUE] 토큰 {}이 대기열에 정상적으로 등록되지 않음", tokenId);
+            throw new CustomException(TokenErrorCode.QUEUE_POSITION_NOT_FOUND);
+        }
+
+        return RedisTokenResult.of(tokenId, tokenValue, TokenStatus.PENDING.toString(), queuePosition, null);
     }
 
     /**
-     * 대기열 통과: 상태 변경 및 만료 시간 부여
+     * 해당 사용자가 이미 대기열에 있는지 확인
      */
-    @Transactional
-    public void processNextInQueue() {
-        log.info("[TokenService] 대기열 처리 시작");
-        try{
-            Token nextToken = tokenRepository.findFirstByStatusOrderByIdAsc(TokenStatus.PENDING);
-
-            if (nextToken != null) {
-                LocalDateTime now = LocalDateTime.now();
-                nextToken.activate(now.plusMinutes(10), now.plusMinutes(30)); // 만료 시간 설정
-                tokenRepository.save(nextToken); // 기존 객체에 대해 변경 사항 저장
-            }
-            log.info("[TokenService] 대기열 처리 완료 >> Token ID: {}, 상태: {}", nextToken.getId(), nextToken.getStatus());
-        }catch (Exception e) {
-            log.error("[TokenService] 대기열 처리 실패", e);
-            throw e;
-        }
+    public boolean isUserAlreadyInQueue(Long userId) {
+        return tokenQueueRepository.isUserInQueue(userId);
     }
 
     /**
-     * 요청 시 토큰 검증 및 만료 시간 연장
+     * 대기열에서 userId 기반으로 TokenId 조회
      */
-    // 1. TokenErrorCode.TOKEN_NOT_FOUND 검증
-    // 2.
-    @Transactional
-    public void validateAndExtendToken(String tokenValue) {
-        log.info("[TokenService] 토큰 검증 및 연장 시작 >> Token Value: {}", tokenValue);
-        try {
-            Token token = tokenRepository.findByToken(tokenValue)
-                    .orElseThrow(() -> new CustomException(TokenErrorCode.TOKEN_NOT_FOUND));
-
-            tokenValidator.validateTokenState(token);
-            tokenValidator.validateTokenExtension(token, 5);
-
-            token.extendExpiration(5); // 만료 시간 5분 연장
-            tokenRepository.save(token);
-
-            log.info("[TokenService] 토큰 연장 완료 >> Token ID: {}, 새로운 만료 시간: {}", token.getId(), token.getExpiredAt());
-        } catch (Exception e) {
-            log.error("[TokenService] 토큰 검증 및 연장 실패 >> Token Value: {}", tokenValue, e);
-            throw e;
-        }
+    public Long getTokenIdByUserId(Long userId) {
+        return tokenQueueRepository.getTokenByUserId(userId);
     }
 
     /**
-     * 요청 없는 ACTIVE 토큰 처리
-     * 10분 이상 요청이 없는 ACTIVE 토큰을 EXPIRED로 변경
+     * 토큰 강제 만료
      */
-    @Transactional
-    public void expireInactiveActiveTokens() {
-        LocalDateTime now = LocalDateTime.now();
-        log.info("[TokenService] 비활성 활성 토큰 만료 처리 시작 >> 기준 시간: {}", now);
-        try {
-            // ACTIVE 상태의 모든 토큰 조회
-            List<Token> tokens = tokenRepository.findAllByStatus(TokenStatus.ACTIVE);
-
-            for (Token token : tokens) {
-                if (token.getLastRequestAt().plusMinutes(10).isBefore(now)) {
-                    token.updateStatus(TokenStatus.EXPIRED); // 상태를 EXPIRED로 변경
-                    tokenRepository.save(token); // 상태 저장
-                    log.info("[TokenService] 토큰 만료 >> Token ID: {}, 상태: {}", token.getId(), token.getStatus());
-                }
-            }
-            log.info("[TokenService] 비활성 활성 토큰 만료 처리 완료 >> 처리된 토큰 수: {}", tokens.size());
-        } catch (Exception e) {
-            log.error("[TokenService] 비활성 활성 토큰 만료 처리 실패 >> 기준 시간: {}", LocalDateTime.now(), e);
-            throw e;
-        }
-    }
-
-    /**
-     * 특정 토큰을 즉시 만료 처리
-     */
-    @Transactional
-    public void expireToken(Long userId) {
-        Token token = tokenRepository.findByUserId(userId)
-                .orElseThrow(() -> new CustomException(TokenErrorCode.TOKEN_NOT_FOUND));
-
-        token.updateStatus(TokenStatus.EXPIRED); // 상태를 EXPIRED로 변경
-        tokenRepository.save(token);
+    public void expireToken(Long tokenId) {
+        tokenRepository.deleteToken(tokenId); // Redis에서 삭제하여 만료 처리
+        tokenQueueRepository.removeTokenQueue(tokenId); // 대기열에서도 삭제
     }
 }

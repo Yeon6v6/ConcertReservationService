@@ -10,6 +10,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Method;
 
@@ -21,6 +22,7 @@ public class RedisLockAspect {
     private static final String REDIS_LOCK_PREFIX = "lock:";
 
     private final RedisLockManager redisLockManager;
+    private final AopForTransaction aopForTransaction;
 
     @Around("@annotation(redisLock)")
     public Object getLock(ProceedingJoinPoint joinPoint, RedisLock redisLock) throws Throwable {
@@ -34,13 +36,17 @@ public class RedisLockAspect {
 
         // Redis 락
         boolean rLock = redisLockManager.lock(lockKey, 10); // 10초 동안 락 유지
+        if (!rLock) {
+            throw new CustomException(SeatErrorCode.SEAT_LOCKED); // 락 획득 실패
+        }
 
         try {
-            if (!rLock) {
-                throw new CustomException(SeatErrorCode.SEAT_LOCKED); // 락 획득 실패
+            // 트랜잭션이 필요한 경우 `AopForTransaction`을 통해 실행
+            if (method.isAnnotationPresent(Transactional.class)) {
+                return aopForTransaction.proceed(joinPoint);
+            } else {
+                return joinPoint.proceed();
             }
-            return joinPoint.proceed();
-
         } finally {
             redisLockManager.unlock(lockKey); // 락 해제
         }
