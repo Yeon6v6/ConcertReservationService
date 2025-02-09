@@ -12,6 +12,45 @@ services:
     volumes:
       - ./data/mysql/:/var/lib/mysql
 
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./influxdb:/var/lib/influxdb
+    environment:
+      - INFLUXDB_DB=hhplus
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin123
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    restart: always
+    volumes:
+      - ./grafana:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - influxdb
+
+  k6:
+    image: grafana/k6
+    container_name: k6-load-test
+    volumes:
+      - ./k6:/scripts
+    working_dir: /scripts
+    entrypoint: ["k6", "run", "--out", "influxdb=http://influxdb:8086/hhplus", "/scripts/script.js"]
+    depends_on:
+      - influxdb
+    networks:
+      - default
+
 networks:
   default:
     driver: bridge

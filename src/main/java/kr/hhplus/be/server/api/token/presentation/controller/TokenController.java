@@ -46,7 +46,7 @@ public class TokenController {
 
             // 응답 헤더 설정
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", tokenResult.tokenValue());
+            headers.set("Authorization", tokenResult.id().toString());
 
             // ApiResponse와 헤더를 함께 반환
             return ResponseEntity.ok()
