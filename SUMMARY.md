@@ -11,14 +11,7 @@
 
 * [ERD 설계](design/design.md)
 * [API 명세](https://cheese-2.gitbook.io/hh_crs_api)
-
-## Swagger
-
-* [메인화면](swagger/api.md)
-* [Token](swagger/token.md)
-* [Concert](swagger/concert.md)
-* [Reservation](swagger/reservation.md)
-* [UserBalance](swagger/userbalance.md)
+* [Swagger 문서](https://cheese-2.gitbook.io/hh_crs_swagger/)
 
 ## 동시성 처리 <a href="#concurrency" id="concurrency"></a>
 
