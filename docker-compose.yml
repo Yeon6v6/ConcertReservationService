@@ -37,7 +37,7 @@ services:
         mysql -h mysql -P 3306 -uapplication -papplication -Dhhplus --connect-timeout=30 < /docker-entrypoint-initdb.d/0_schema.sql;
         echo "Schema setup complete.";
         echo "Running initial bulk data scripts...";
-        mysql -h mysql -P 3306 -uapplication -papplication -Dhhplus --connect-timeout=30 < /docker-entrypoint-initdb.d/1_bulk_data.sql;
+        mysql -h mysql -P 3306 -uapplication -papplication -Dhhplus < /docker-entrypoint-initdb.d/1_bulk_data.sql;
         echo "MySQL initialization complete.";
     restart: "no"
 
