@@ -24,8 +24,10 @@
 * [쿼리 성능 현황](queryboost/curquerystatus.md)
 * [Redis 및 캐싱을 적용한 성능 개선](queryboost/rediscacheboost.md)
 * [응답 속도 및 쿼리 실행 비교](queryboost/responsetest.md)
+* [인덱싱을 통한 성능 개선](queryboost/indexing.md)
 
 ## MSA 아키텍쳐 도입 설계
 
-* [MSA란?](msa/info.md)
-* [현재 API 분석(ReservationFacade)](msa/api-reservationfacade.md)
+* [현재 API 분석(ReservationFacade)](msa/api_analyze.md)
+* [분산 트랜잭션 처리 방안](msa/dtp.md)
+* [현재 API 아키텍쳐 MSA 전환 설계](msa/msatd.md)

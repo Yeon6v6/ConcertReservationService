@@ -37,7 +37,7 @@ Postman으로 요청 할 경우 두번째 요청부터는 속도가 줄어듦&#x
 
 _⇒ Postman 자체 캐시_ _때문에 속도가 줄어들게 된다.  Postman의  캐시 삭제해도 동일하지만, 웹페이지에서 캐시 및 쿠키를 삭제해가며 호출한 경우는 조회 속도가 빨라지진 않았다._
 
-<figure><img src="../.gitbook/assets/image (4).png" alt=""><figcaption><p>최초 요청(조회)</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (4) (1).png" alt=""><figcaption><p>최초 요청(조회)</p></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/image (9).png" alt=""><figcaption><p>이후 4회 연속 조회 시</p></figcaption></figure>
 
@@ -45,7 +45,7 @@ Postman호출하여 속도가 줄어들더라도,  동일한 요청을 반복하
 
 ### **요청 및 응답 / 쿼리 실행 로그**
 
-<figure><img src="../.gitbook/assets/image (6).png" alt=""><figcaption><p>LOG 기록</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (6) (1).png" alt=""><figcaption><p>LOG 기록</p></figcaption></figure>
 
 ```log
 [LoggingFilter] 요청 IP : 0:0:0:0:0:0:0:1
@@ -95,7 +95,7 @@ EXPLAIN으로 쿼리 실행계획을 확인해보니 FULL SCAN 발생하는 경�
 
 ### **요청 및 응답 속도 조회**
 
-<figure><img src="../.gitbook/assets/image (7).png" alt=""><figcaption><p>최초 요청(조회)</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (7) (1).png" alt=""><figcaption><p>최초 요청(조회)</p></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/image (8).png" alt=""><figcaption><p>이후 4회 연속 조회 시</p></figcaption></figure>
 
