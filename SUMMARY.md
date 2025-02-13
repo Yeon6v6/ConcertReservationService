@@ -28,6 +28,6 @@
 
 ## MSA 아키텍쳐 도입 설계
 
-* [현재 API 분석(ReservationFacade)](msa/api_analyze.md)
+* [현재 API 분석(ReservationFacade)](msa/api-reservationfacade.md)
 * [분산 트랜잭션 처리 방안](msa/dtp.md)
 * [현재 API 아키텍쳐 MSA 전환 설계](msa/msatd.md)
