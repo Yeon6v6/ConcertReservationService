@@ -30,4 +30,4 @@
 
 * [현재 API 분석(ReservationFacade)](msa/api-reservationfacade.md)
 * [분산 트랜잭션 처리 방안](msa/dtp.md)
-* [현재 API 아키텍쳐 MSA 전환 설계](msa/msatd.md)
+* [현재 API 아키텍쳐 MSA 전환 설계 흐름](msa/msatd.md)
