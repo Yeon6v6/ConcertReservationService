@@ -66,6 +66,10 @@ dependencies {
 	// Jakarta Bean Validation API
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 
+	// Kafka
+	implementation("org.springframework.kafka:spring-kafka:3.3.1")
+	testImplementation("org.springframework.kafka:spring-kafka-test")
+
 }
 
 tasks.withType<Test> {
