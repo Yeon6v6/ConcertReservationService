@@ -15,11 +15,11 @@ import kr.hhplus.be.server.api.reservation.infrastructure.MockDataPlatformApiCli
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
@@ -48,7 +48,7 @@ public class KafkaOutboxIntegrationTest {
     private TransactionTemplate transactionTemplate;
 
     // 목으로 등록된 KafkaTemplate 및 MockDataPlatformApiClient를 주입받음
-    @Autowired
+    @MockitoSpyBean
     private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Autowired
@@ -203,6 +203,4 @@ public class KafkaOutboxIntegrationTest {
         OutboxEntity updatedOutbox = optOutbox.get();
         assertEquals(OutboxStatus.SENT, updatedOutbox.getStatus(), "메시지 상태가 SENT여야 합니다.");
     }
-
-
 }
