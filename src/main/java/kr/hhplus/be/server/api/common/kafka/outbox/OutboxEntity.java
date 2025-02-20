@@ -29,7 +29,8 @@ public class OutboxEntity {
     @Enumerated(EnumType.STRING)
     private OutboxStatus status;
 
-    private int retryCount = 0;
+    @Builder.Default
+    private int retryCount = 0 ;
     private LocalDateTime createdAt;
     private LocalDateTime lastTriedAt;
 }
