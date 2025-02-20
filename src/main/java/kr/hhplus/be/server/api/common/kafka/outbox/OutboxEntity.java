@@ -23,6 +23,7 @@ public class OutboxEntity {
     private String topic;
     private String messageKey;     // 메시지 key
     @Lob
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String payload; // 직렬화된 이벤트/메시지
 
     @Enumerated(EnumType.STRING)

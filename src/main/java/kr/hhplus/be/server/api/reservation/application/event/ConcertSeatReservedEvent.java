@@ -1,10 +1,7 @@
 package kr.hhplus.be.server.api.reservation.application.event;
 
 import kr.hhplus.be.server.api.common.kafka.event.DomainEvent;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 @Getter
 @AllArgsConstructor

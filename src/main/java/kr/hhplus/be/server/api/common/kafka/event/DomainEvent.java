@@ -11,11 +11,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public interface DomainEvent {
+    ObjectMapper objectMapper = new ObjectMapper();
+
     String getTopic();
     String getKey();
+
     default String getPayload() {
         try {
-            return new ObjectMapper().writeValueAsString(this);
+            return objectMapper.writeValueAsString(this);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Payload 직렬화 실패", e);
         }
