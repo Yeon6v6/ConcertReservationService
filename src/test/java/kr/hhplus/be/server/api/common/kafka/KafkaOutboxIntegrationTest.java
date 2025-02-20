@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.hhplus.be.server.api.common.kafka.consumer.DataPlatformConsumer;
 import kr.hhplus.be.server.api.common.kafka.consumer.ReservationConsumer;
 import kr.hhplus.be.server.api.common.kafka.outbox.OutboxEntity;
-import kr.hhplus.be.server.api.common.kafka.outbox.OutboxStatus;
 import kr.hhplus.be.server.api.common.kafka.outbox.OutboxRepository;
 import kr.hhplus.be.server.api.common.kafka.outbox.OutboxScheduler;
+import kr.hhplus.be.server.api.common.kafka.outbox.OutboxStatus;
 import kr.hhplus.be.server.api.reservation.application.event.ConcertSeatPaidEvent;
 import kr.hhplus.be.server.api.reservation.application.event.ConcertSeatReservedEvent;
 import kr.hhplus.be.server.api.reservation.application.event.listener.SeatPaidEventListener;
@@ -18,9 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -71,7 +69,7 @@ public class KafkaOutboxIntegrationTest {
     @BeforeEach
     public void setUp() {
         outboxRepository.deleteAll();
-        Mockito.reset(kafkaTemplate, mockDataPlatformApiClient);
+//        Mockito.reset(kafkaTemplate, mockDataPlatformApiClient);
     }
 
     /**

@@ -31,9 +31,15 @@ public class OutboxScheduler {
 
         for (OutboxEntity message : messages) {
             try {
+                // 중복 방지를 위해 먼저 상태를 업데이트
+                message.setStatus(OutboxStatus.SENDING);
+                outboxRepository.save(message);
+
                 kafkaProducer.sendMessage(message.getTopic(), message.getMessageKey(), message.getPayload());
+
                 message.setLastTriedAt(LocalDateTime.now());
                 outboxRepository.save(message);
+
                 log.info("[OutboxScheduler] Outbox 메시지 id={} Kafka 재발행 완료", message.getId());
             } catch (Exception e) {
                 // 재처리 횟수 증가

@@ -46,7 +46,31 @@ public class ReservationConsumer {
             }
 
         } catch (Exception e) {
-            log.error("[ReservationConsumer] 메시지 처리 중 오류 발생: {}", e.getMessage(), e);
+            try {
+                // Outbox에서 해당 메시지를 조회
+                Optional<OutboxEntity> outboxEntityOptional = outboxRepository.findByMessageKey(message);
+
+                if (outboxEntityOptional.isPresent()) {
+                    // 기존 메시지가 있다면 상태를 PENDING으로 변경 (재처리 가능하게)
+                    OutboxEntity outboxEntity = outboxEntityOptional.get();
+                    outboxEntity.setStatus(OutboxStatus.PENDING);
+                    outboxEntity.setRetryCount(outboxEntity.getRetryCount() + 1);
+                    outboxRepository.save(outboxEntity);
+                    log.warn("[ReservationConsumer] 메시지를 PENDING 상태로 변경 (재처리 예정): reservationId={}", outboxEntity.getMessageKey());
+                } else {
+                    // 기존 메시지가 없다면 새로운 Outbox 메시지 생성
+                    OutboxEntity newOutboxEntity = new OutboxEntity();
+                    newOutboxEntity.setMessageKey(message);
+                    newOutboxEntity.setPayload(message);
+                    newOutboxEntity.setStatus(OutboxStatus.PENDING);
+                    newOutboxEntity.setRetryCount(1);
+                    outboxRepository.save(newOutboxEntity);
+                    log.warn("[ReservationConsumer] Outbox에 새로운 메시지 추가 (재처리 예정): reservationId={}", message);
+                }
+
+            } catch (Exception ex) {
+                log.error("[ReservationConsumer] Outbox에 메시지를 저장하는 중 오류 발생: {}", ex.getMessage(), ex);
+            }
         }
     }
 }
