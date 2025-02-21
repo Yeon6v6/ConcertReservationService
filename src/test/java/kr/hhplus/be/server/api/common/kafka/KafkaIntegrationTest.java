@@ -39,7 +39,7 @@ public class KafkaIntegrationTest {
         latch = new CountDownLatch(1);
         receivedMessage = null;
 
-        // ✅ Embedded Kafka가 완전히 실행될 시간을 줌
+        // Embedded Kafka가 완전히 실행될 시간을 줌
         Thread.sleep(3000);
     }
 
@@ -49,7 +49,7 @@ public class KafkaIntegrationTest {
      */
     @KafkaListener(topics = TOPIC, groupId = "test-group")
     public void consume(ConsumerRecord<String, String> record) {
-        System.out.println("📥 Received message: " + record.value());
+        System.out.println("Received message: " + record.value());
         this.receivedMessage = record.value();
         latch.countDown();
     }
