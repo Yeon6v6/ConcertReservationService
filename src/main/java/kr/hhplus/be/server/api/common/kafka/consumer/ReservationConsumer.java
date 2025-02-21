@@ -57,15 +57,6 @@ public class ReservationConsumer {
                     outboxEntity.setRetryCount(outboxEntity.getRetryCount() + 1);
                     outboxRepository.save(outboxEntity);
                     log.warn("[ReservationConsumer] 메시지를 PENDING 상태로 변경 (재처리 예정): reservationId={}", outboxEntity.getMessageKey());
-                } else {
-                    // 기존 메시지가 없다면 새로운 Outbox 메시지 생성
-                    OutboxEntity newOutboxEntity = new OutboxEntity();
-                    newOutboxEntity.setMessageKey(message);
-                    newOutboxEntity.setPayload(message);
-                    newOutboxEntity.setStatus(OutboxStatus.PENDING);
-                    newOutboxEntity.setRetryCount(1);
-                    outboxRepository.save(newOutboxEntity);
-                    log.warn("[ReservationConsumer] Outbox에 새로운 메시지 추가 (재처리 예정): reservationId={}", message);
                 }
 
             } catch (Exception ex) {
