@@ -42,3 +42,10 @@
 docker-compose up -d
 ```
 
+부하 테스트를 위한 k6 / influxdb / grafana 추가 시 빌드 필요
+
+<pre class="language-bash"><code class="lang-bash"><strong>docker-compose up --build
+</strong><strong># k6 실행
+</strong><strong>docker-compose up k6
+</strong></code></pre>
+

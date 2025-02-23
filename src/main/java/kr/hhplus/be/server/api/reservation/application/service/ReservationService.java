@@ -1,6 +1,5 @@
 package kr.hhplus.be.server.api.reservation.application.service;
 
-import jakarta.transaction.Transactional;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.reservation.application.dto.command.ReservationCommand;
 import kr.hhplus.be.server.api.reservation.application.dto.result.ReservationResult;
@@ -37,7 +36,6 @@ public class ReservationService {
     /**
      * 예약 생성(좌석 예약)
      */
-    @Transactional
     public ReservationResult createReservation(ReservationCommand command) {
         log.info("[ReservationService] 예약 생성 시작 >> User ID: {}, Seat ID: {}", command.userId(), command.seatId());
 

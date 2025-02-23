@@ -36,7 +36,8 @@ spring:
     password: application
   sql:
     init:
-      mode: always
+#      mode: always
+      mode: never
 
 logging:
   level:

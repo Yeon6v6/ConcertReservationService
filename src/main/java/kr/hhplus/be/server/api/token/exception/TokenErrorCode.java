@@ -12,7 +12,9 @@ public enum TokenErrorCode implements ErrorCode {
     TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "TOKEN_EXPIRED", "토큰이 만료되었습니다."),
     TOKEN_MAX_EXTENSION_EXCEEDED(HttpStatus.BAD_REQUEST, "TOKEN_MAX_EXTENSION_EXCEEDED", "최대 연장 시간을 초과할 수 없습니다."),
     TOKEN_NOT_PASSED_QUEUE(HttpStatus.BAD_REQUEST, "TOKEN_NOT_IN_QUEUE", "토큰이 대기열을 통과하지 못했습니다."),
-    TOKEN_NOT_ACTIVE(HttpStatus.FORBIDDEN, "TOKEN_NOT_ACTIVE", "토큰이 활성 상태가 아닙니다.");
+    QUEUE_POSITION_NOT_FOUND(HttpStatus.BAD_REQUEST, "QUEUE_POSITION_NOT_FOUND", "토큰 대기열 순번 조회에 실패했습니다."),
+    TOKEN_NOT_ACTIVE(HttpStatus.FORBIDDEN, "TOKEN_NOT_ACTIVE", "토큰이 활성 상태가 아닙니다.")
+    ,USER_ALREADY_IN_QUEUE(HttpStatus.BAD_REQUEST, "USER_ALREADY_IN_QUEUE", "사용자가 이미 대기열에 등록되어 있습니다.");
 
 
     private final HttpStatus httpStatus;
