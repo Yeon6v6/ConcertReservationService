@@ -53,7 +53,7 @@ _코디네이터로부터 rollback 메시지(no.9)를 받으면 각각의 참여
       (즉, 각 서비스는 트랜잭션 결과를 이벤트로 기록하고 그 이벤트를 사가 패턴의 다음 단계로 넘기는 방식으로 이어나갈 수 있다는의미)
 *   **시나리오 예시**&#x20;
 
-    <figure><img src="../.gitbook/assets/image (42).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../.gitbook/assets/image (52).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -73,7 +73,7 @@ _코디네이터로부터 rollback 메시지(no.9)를 받으면 각각의 참여
 
 
 
-<figure><img src="../.gitbook/assets/image (39).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (49).png" alt=""><figcaption></figcaption></figure>
 
 ### **오케스트레이션(**&#x4F;rchestration) **기반 사가**
 
@@ -88,5 +88,5 @@ _코디네이터로부터 rollback 메시지(no.9)를 받으면 각각의 참여
   * 중앙 조정자가 장애를 일으킬 경우 전체 시스템에 영향을 줄 수 있음짐
   * 오케스트레이터에 의존하게 되어 서비스 간 결합도가 높아
 
-<figure><img src="../.gitbook/assets/image (40).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (50).png" alt=""><figcaption></figcaption></figure>
 

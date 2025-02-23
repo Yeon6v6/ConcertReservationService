@@ -8,7 +8,7 @@
 
 캐시(Cache, 임시 데이터 저장소)에 접근해서 데이터를 빠르게 가져오는 방식
 
-<figure><img src="../.gitbook/assets/image (23).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (23) (1).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -85,11 +85,11 @@
 
       * 캐시에 데이터가 있을 경우 (= Cache Hint)
 
-      <figure><img src="../.gitbook/assets/image (28).png" alt=""><figcaption><p>Cache Hint</p></figcaption></figure>
+      <figure><img src="../.gitbook/assets/image (28) (1).png" alt=""><figcaption><p>Cache Hint</p></figcaption></figure>
 
       * 캐시에 데이터가 없을 경우 (= Cache Miss)
 
-      <figure><img src="../.gitbook/assets/image (27).png" alt=""><figcaption><p>Cache Miss</p></figcaption></figure>
+      <figure><img src="../.gitbook/assets/image (27) (1).png" alt=""><figcaption><p>Cache Miss</p></figcaption></figure>
 
 ### 5. (번외) Write Around
 
@@ -101,5 +101,5 @@
 * 특징
   *   전달방식
 
-      <figure><img src="../.gitbook/assets/image (26).png" alt=""><figcaption></figcaption></figure>
+      <figure><img src="../.gitbook/assets/image (26) (1).png" alt=""><figcaption></figcaption></figure>
 

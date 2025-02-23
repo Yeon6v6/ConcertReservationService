@@ -37,15 +37,15 @@ Postman으로 요청 할 경우 두번째 요청부터는 속도가 줄어듦&#x
 
 _⇒ Postman 자체 캐시_ _때문에 속도가 줄어들게 된다.  Postman의  캐시 삭제해도 동일하지만, 웹페이지에서 캐시 및 쿠키를 삭제해가며 호출한 경우는 조회 속도가 빨라지진 않았다._
 
-<figure><img src="../.gitbook/assets/image (4) (1).png" alt=""><figcaption><p>최초 요청(조회)</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (12).png" alt=""><figcaption><p>최초 요청(조회)</p></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (9).png" alt=""><figcaption><p>이후 4회 연속 조회 시</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (17).png" alt=""><figcaption><p>이후 4회 연속 조회 시</p></figcaption></figure>
 
 Postman호출하여 속도가 줄어들더라도,  동일한 요청을 반복하지만 아래의 로그와 같이 매번 DB에 접근하여 조회하기 때문에 요청마다 쿼리가 발생
 
 ### **요청 및 응답 / 쿼리 실행 로그**
 
-<figure><img src="../.gitbook/assets/image (6) (1).png" alt=""><figcaption><p>LOG 기록</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (14).png" alt=""><figcaption><p>LOG 기록</p></figcaption></figure>
 
 ```log
 [LoggingFilter] 요청 IP : 0:0:0:0:0:0:0:1
@@ -76,7 +76,7 @@ Hibernate: select cs1_0.id,cs1_0.concert_id,cs1_0.is_sold_out,cs1_0.schedule_dat
 
 EXPLAIN으로 쿼리 실행계획을 확인해보니 FULL SCAN 발생하는 경우 존재
 
-<figure><img src="../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -95,13 +95,13 @@ EXPLAIN으로 쿼리 실행계획을 확인해보니 FULL SCAN 발생하는 경�
 
 ### **요청 및 응답 속도 조회**
 
-<figure><img src="../.gitbook/assets/image (7) (1).png" alt=""><figcaption><p>최초 요청(조회)</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (15).png" alt=""><figcaption><p>최초 요청(조회)</p></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (8).png" alt=""><figcaption><p>이후 4회 연속 조회 시</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (16).png" alt=""><figcaption><p>이후 4회 연속 조회 시</p></figcaption></figure>
 
 ### **요청 및 응답 / 쿼리 실행 로그**
 
-<figure><img src="../.gitbook/assets/image (16).png" alt=""><figcaption><p>최초 요청 시 LOG</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (24).png" alt=""><figcaption><p>최초 요청 시 LOG</p></figcaption></figure>
 
 ```
 [LoggingFilter] 요청 IP : 0:0:0:0:0:0:0:1
@@ -119,7 +119,7 @@ CacheInterceptor - Creating cache entry for key 'concerts:31' in cache(s) [avail
 2. 따라서 기존  DB 조회 로직 실행
 3. `Creating cache` : DB로부터 조회해온 데이터를 캐시에 저장
 
-<figure><img src="../.gitbook/assets/image (35).png" alt=""><figcaption><p>최초 요청 이후 LOG</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (45).png" alt=""><figcaption><p>최초 요청 이후 LOG</p></figcaption></figure>
 
 ```
 [LoggingFilter] 요청 IP : 0:0:0:0:0:0:0:1
@@ -161,7 +161,7 @@ Cache에서 데이터를 갖고왔기 때문에, <mark style="color:red;">쿼리
 keys *
 ```
 
-<figure><img src="../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
 
 ✅ **KEY에 저장된 데이터 확인**
 
@@ -169,7 +169,7 @@ keys *
 get availableDates::concerts:31
 ```
 
-<figure><img src="../.gitbook/assets/image (36).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (46).png" alt=""><figcaption></figcaption></figure>
 
 ✅ **Redis Cache TTL 확인**
 
@@ -177,6 +177,6 @@ get availableDates::concerts:31
 ttl availableDates::concerts:31
 ```
 
-<figure><img src="../.gitbook/assets/image (38).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
 
 TTL 값 정상 확인 됨

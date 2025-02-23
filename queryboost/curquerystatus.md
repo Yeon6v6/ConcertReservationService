@@ -61,7 +61,7 @@ SELECT * FROM concert_schedule
 WHERE concert_id = 1 AND is_sold_out = 1;
 ```
 
-<figure><img src="../.gitbook/assets/image (29).png" alt=""><figcaption><p>결과 값</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (29) (1).png" alt=""><figcaption><p>결과 값</p></figcaption></figure>
 
 * [x] type : ALL \
   &#xNAN;_⇒ 테이블 풀 스캔_
@@ -84,7 +84,7 @@ SELECT * FROM concert_schedule
 WHERE concert_id = 1 AND schedule_date = '2025-01-01';
 ```
 
-<figure><img src="../.gitbook/assets/image (31).png" alt=""><figcaption><p>결과 값</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (31) (1).png" alt=""><figcaption><p>결과 값</p></figcaption></figure>
 
 * [x] type : ALL \
   &#xNAN;_⇒ 테이블 풀 스캔_
@@ -111,7 +111,7 @@ WHERE concert_id = 1
   AND status = 'AVAILABLE';
 ```
 
-<figure><img src="../.gitbook/assets/image (33).png" alt=""><figcaption><p>결과 값</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (33) (1).png" alt=""><figcaption><p>결과 값</p></figcaption></figure>
 
 * [x] type : ALL \
   &#xNAN;_⇒ 테이블 풀 스캔_
@@ -132,7 +132,7 @@ WHERE concert_id = 1
   AND status = 'AVAILABLE';
 ```
 
-<figure><img src="../.gitbook/assets/image (34).png" alt=""><figcaption><p>결과 값</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (34) (1).png" alt=""><figcaption><p>결과 값</p></figcaption></figure>
 
 * [x] type : ALL \
   &#xNAN;_⇒ 테이블 풀 스캔_
