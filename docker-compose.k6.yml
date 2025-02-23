@@ -1,4 +1,4 @@
-version: '3'
+#version: '3'
 services:
   k6:
     image: grafana/k6:latest
@@ -11,5 +11,6 @@ services:
     network_mode: host
 #docker compose -f docker-compose.k6.yml run --rm k6
 #docker compose -f docker-compose.k6.yml run --rm k6 -- getAvaliableSeat.js
+#docker compose -f docker-compose.k6.yml run --rm k6 -- waiting-queue.js
 #경로가 다른 경우 volume 수정 ==> /k6/api
 

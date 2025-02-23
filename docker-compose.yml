@@ -11,15 +11,16 @@ services:
       - MYSQL_PASSWORD=application
       - MYSQL_DATABASE=hhplus
       - MYSQL_ROOT_HOST=%
-#      - MYSQL_TCP_PORT=3306  # MySQL이 3306 포트를 강제 사용하도록 설정
-#    command: --port=3306  # MySQL 실행 시 3306 포트를 강제 사용
+    #      - MYSQL_TCP_PORT=3306  # MySQL이 3306 포트를 강제 사용하도록 설정
+    #    command: --port=3306  # MySQL 실행 시 3306 포트를 강제 사용
     volumes:
+      - ./data/mysql/my.cnf:/etc/mysql/my.cnf
       - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       retries: 5
-      start_period: 30s
+  #      start_period: 30s
 
   mysql-init:
     image: mysql:8.0
@@ -41,6 +42,14 @@ services:
         echo "MySQL initialization complete.";
     restart: "no"
 
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/redis:/data
+
   influxdb:
     image: influxdb:1.8
     container_name: influxdb
@@ -60,56 +69,71 @@ services:
       - "3000:3000"
     restart: always
     volumes:
-      - ./grafana:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
     depends_on:
       - influxdb
+  #
+  #  k6:
+  #    image: grafana/k6
+  #    container_name: k6-
+  #    volumes:
+  #      - ./k6:/scripts
+  #    working_dir: /scripts
+  #    entrypoint: ["k6", "run", "--out", "influxdb=http://influxdb:8086/hhplus", "/scripts/script.js"]
+  #    depends_on:
+  #      - influxdb
+  #    networks:
+  #      - default
 
-  k6:
-    image: grafana/k6
-    container_name: k6-
-    volumes:
-      - ./k6:/scripts
-    working_dir: /scripts
-    entrypoint: ["k6", "run", "--out", "influxdb=http://influxdb:8086/hhplus", "/scripts/script.js"]
+  #  prometheus:
+  #    image: prom/prometheus
+  #    container_name: prometheus
+  #    ports:
+  #      - "9090:9090"
+  #    restart: always
+  #    volumes:
+  #      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #
+  #  mysql-exporter:
+  #    container_name: mysql-exporter
+  #    image: prom/mysqld-exporter
+  #    command:
+  #      - "--mysqld.username=application:application"
+  #      - "--mysqld.address=mysql:3307"
+  #    ports:
+  #      - "9104:9104"
+  #    depends_on:
+  #      - mysql
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
     depends_on:
-      - influxdb
-    networks:
-      - default
-
-#  prometheus:
-#    image: prom/prometheus
-#    container_name: prometheus
-#    ports:
-#      - "9090:9090"
-#    restart: always
-#    volumes:
-#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-#
-#  mysql-exporter:
-#    container_name: mysql-exporter
-#    image: prom/mysqld-exporter
-#    command:
-#      - "--mysqld.username=application:application"
-#      - "--mysqld.address=mysql:3307"
-#    ports:
-#      - "9104:9104"
-#    depends_on:
-#      - mysql
-
-#  redis:
-#    image: redis:latest
-#    container_name: redis
-#    ports:
-#      - "6379:6379"
-#    volumes:
-#      - ./data/redis:/data
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
 volumes:
   mysql_data:
+  grafana_data:
 
 networks:
   default:
