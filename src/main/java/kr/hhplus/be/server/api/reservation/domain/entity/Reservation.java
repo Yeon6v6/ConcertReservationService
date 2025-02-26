@@ -75,4 +75,8 @@ public class Reservation {
             throw new CustomException(ReservationErrorCode.INVALID_RESERVATION_STATUS);
         }
     }
+
+    public void cancel() {
+        this.status = ReservationStatus.CANCELED;
+    }
 }

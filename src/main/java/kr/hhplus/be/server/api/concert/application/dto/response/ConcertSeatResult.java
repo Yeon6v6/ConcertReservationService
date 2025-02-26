@@ -6,16 +6,14 @@ import java.time.LocalDate;
 
 public record ConcertSeatResult (
     Long id,
-    LocalDate scheduleId,
+    Long concertId,
+    LocalDate scheduleDate,
     int seatNumber,
     String status,
     Long price
 ) {
     public static ConcertSeatResult from(Seat seat){
-        return new ConcertSeatResult(seat.getConcertId(), seat.getScheduleDate(), seat.getSeatNumber(), String.valueOf(seat.getStatus()), seat.getPrice());
-    }
-
-    public boolean isAvailable() {
-        return "AVAILABLE".equalsIgnoreCase(this.status);
+        ConcertSeatResult concertSeatResult = new ConcertSeatResult(seat.getId(), seat.getConcertId(), seat.getScheduleDate(), seat.getSeatNumber(), String.valueOf(seat.getStatus()), seat.getPrice());
+        return concertSeatResult;
     }
 }

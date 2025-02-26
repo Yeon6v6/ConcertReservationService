@@ -30,9 +30,9 @@ public class ConcertContoller {
         try {
             List<LocalDate> availableDates = concertService.getAvailableDateList(concertId);
 
-            return ResponseEntity.ok(ApiResponse.success("예약 가능한 날짜 목록을 조회했습니다.", availableDates));
+            return ApiResponse.success("예약 가능한 날짜 목록을 조회했습니다.", availableDates);
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(ApiResponse.error(e.getErrorCode().getName(), e.getMessage()));
+            return ApiResponse.error(e.getErrorCode().getName(), e.getMessage());
         }
     }
 
@@ -47,9 +47,9 @@ public class ConcertContoller {
         try {
             List<ConcertSeatResult> availableSeats = concertService.getAvailableSeatList(concertId, scheduleDate);
 
-            return ResponseEntity.ok(ApiResponse.success("예약 가능한 좌석 정보를 조회했습니다.", availableSeats));
+            return ApiResponse.success("예약 가능한 좌석 정보를 조회했습니다.", availableSeats);
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(ApiResponse.error(e.getErrorCode().getName(), e.getMessage()));
+            return ApiResponse.error(e.getErrorCode().getName(), e.getMessage());
         }
     }
 }

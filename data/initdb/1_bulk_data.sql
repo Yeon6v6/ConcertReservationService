@@ -48,7 +48,7 @@ LIMIT 1000;
 -- 3. CONCERT_SCHEDULE 테이블 데이터 삽입
 -- 각 콘서트당 5개의 스케줄을 생성 (날짜는 2025-01-01부터 순차적으로)
 -- ------------------------------------------------------------
-INSERT INTO concert_schedule (concert_id, schedule_date, is_sold_out)
+INSERT IGNORE INTO concert_schedule (concert_id, schedule_date, is_sold_out)
 SELECT
     c.id,
     DATE_ADD('2025-01-01', INTERVAL FLOOR(RAND()*365) DAY) AS schedule_date,

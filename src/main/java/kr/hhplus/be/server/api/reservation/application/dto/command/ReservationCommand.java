@@ -4,9 +4,9 @@ import java.time.LocalDate;
 
 public record ReservationCommand (
         Long userId,
+        Long concertId,
         Long seatId,
         int seatNumber,
-        Long concertId,
         LocalDate scheduleDate,
         Long price
 ){
@@ -18,6 +18,6 @@ public record ReservationCommand (
             LocalDate scheduleDate,
             Long price
     ) {
-        return new ReservationCommand(userId, seatId, seatNumber, concertId, scheduleDate, price);
+        return new ReservationCommand(userId, concertId, seatId, seatNumber, scheduleDate, price);
     }
 }

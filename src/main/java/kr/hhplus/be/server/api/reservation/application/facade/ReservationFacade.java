@@ -14,21 +14,26 @@ import kr.hhplus.be.server.api.reservation.application.event.ConcertSeatPaidEven
 import kr.hhplus.be.server.api.reservation.application.event.ConcertSeatReservedEvent;
 import kr.hhplus.be.server.api.reservation.application.service.ReservationService;
 import kr.hhplus.be.server.api.reservation.domain.entity.Reservation;
+import kr.hhplus.be.server.api.reservation.exception.ReservationErrorCode;
 import kr.hhplus.be.server.api.token.application.service.TokenService;
 import kr.hhplus.be.server.api.user.application.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ReservationFacade {
     private final ReservationService reservationService;
     private final ConcertService concertService;
     private final UserService userService;
     private final TokenService tokenService;
-    private final OutboxRepository outboxRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     /**
@@ -40,11 +45,7 @@ public class ReservationFacade {
     @Transactional
     public ReservationResult reserveSeat(ReservationCommand reservationCmd) {
         // 1. 좌석 상태 확인
-        ConcertSeatResult seatResult = concertService.reserveSeat(reservationCmd.seatId());
-
-        if(!seatResult.isAvailable()) {
-            throw new CustomException(SeatErrorCode.SEAT_ALREADY_RESERVED);
-        }
+        ConcertSeatResult seatResult = concertService.reserveSeat(reservationCmd.concertId(), reservationCmd.scheduleDate(), reservationCmd.seatNumber());
 
         // 2. 예약 정보 생성
         ReservationResult reservationResult = reservationService.createReservation(reservationCmd);
@@ -70,11 +71,18 @@ public class ReservationFacade {
             // 1. 예약 조회 (별도 트랜잭션: ReservationService.findById는 REQUIRES_NEW 적용)
             Reservation reservation = reservationService.findById(paymentCmd.reservationId());
             if (reservation == null) {
-                throw new CustomException(SeatErrorCode.SEAT_NOT_RESERVED);
+                throw new CustomException(ReservationErrorCode.RESERVATION_NOT_FOUND);
             }
 
             // 2. 예약 유효성 검증(금액 및 예약상태)
-            reservation.validate();
+            try {
+                reservation.validate();
+            } catch (CustomException e) {
+                // 예약이 만료된 경우, 좌석을 AVAILABLE 상태로 변경하는 보상 트랜잭션 수행
+                concertService.releaseSeat(reservation.getSeatId());
+                throw e; // 예외 다시 던지기
+            }
+
             Long seatPrice = reservation.getPrice();
 
             // 3. 결제 처리 (및 잔액) - 별도 트랜잭션: UserService.processPayment
@@ -115,6 +123,30 @@ public class ReservationFacade {
             );
         }catch(Exception ex){
             throw ex;
+        }
+    }
+
+    /**
+     * 만료된 예약 정리 (스케줄러에서 호출)
+     */
+    @Transactional
+    public void cleanupExpiredReservations() {
+        // 1. 만료된 예약 목록 조회
+        List<Reservation> expiredReservations = reservationService.findExpiredReservations();
+
+        if (expiredReservations.isEmpty()) {
+            return;
+        }
+
+        // 2. 예약 취소 및 좌석 AVAILABLE 변경
+        for (Reservation reservation : expiredReservations) {
+            try {
+                reservationService.cancelReservation(reservation.getId()); // 예약 취소
+                concertService.releaseSeat(reservation.getSeatId()); // 좌석 AVAILABLE로 변경
+                log.info("[ReservationFacade] 만료된 예약 취소 완료 >> Reservation ID: {}", reservation.getId());
+            } catch (Exception e) {
+                log.error("[ReservationFacade] 예약 취소 실패 >> Reservation ID: {}", reservation.getId(), e);
+            }
         }
     }
 }

@@ -16,8 +16,10 @@ spring:
     generate-ddl: false
     show-sql: true
     hibernate:
-      ddl-auto: update
 #      ddl-auto: create
+      ddl-auto: update
+      jdbc:
+        time_zone: UTC
     properties:
       hibernate.timezone.default_storage: NORMALIZE_UTC
       hibernate.jdbc.time_zone: UTC
@@ -45,6 +47,12 @@ logging:
     org.springframework.cache: trace # Redis 캐시 로그 기록
   pattern:
       console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
+
+p6spy:
+  executionThreshold: 0   # 밀리세컨드(milliseconds)
+  excludecategories: info,debug,result,resultset,rollback,commit # add categories as comma separated: statement, resultset, debug, batch, rollback, commit
+  autoflush: true
+  databaseDialectTimestampFormat: yyyy-MM-dd HH:mm:ss.SSS
 
 # Swagger
 springdoc:

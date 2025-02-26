@@ -34,10 +34,6 @@ public class RedisTokenQueueRepository implements TokenQueueRepository {
      */
     @Override
     public void enqueue(Long tokenId, Long userId) {
-        if (isUserInQueue(userId)) {
-            throw new CustomException(TokenErrorCode.USER_ALREADY_IN_QUEUE);
-        }
-
         long score = Instant.now().getEpochSecond();
         zSetOperations.add(TokenConstants.TOKEN_QUEUE_PREFIX, tokenId.toString(), score);
         hashOperations.put(TokenConstants.TOKEN_USER_PREFIX, userId.toString(), tokenId.toString());

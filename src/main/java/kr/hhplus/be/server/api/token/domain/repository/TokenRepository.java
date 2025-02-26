@@ -12,4 +12,5 @@ public interface TokenRepository{
     Long getQueuePosition(Long tokenId);
     void removeExpiredTokens();
     void deleteToken(Long tokenId);
+    Long getTokenExpiration(Long tokenId);
 }

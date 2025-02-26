@@ -19,17 +19,17 @@ public class LoggingFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         long startTime = System.currentTimeMillis();
-        log.info("[LoggingFilter] 요청 IP : {}", request.getRemoteAddr());
-        log.info("[LoggingFilter] 요청 시간 : {}", System.currentTimeMillis());
-
+//        log.info("[LoggingFilter] 요청 IP : {}", request.getRemoteAddr());
+//        log.info("[LoggingFilter] 요청 시간 : {}", System.currentTimeMillis());
+//
         chain.doFilter(request, response);
 
         long duration = System.currentTimeMillis() - startTime;
-        log.info("[LoggingFilter] 요청 처리 시간 : {} ms", duration);
+//        log.info("[LoggingFilter] 요청 처리 시간 : {} ms", duration);
     }
 
     @Override
     public void destroy() {
-        log.info("[LoggingFilter] 종료 시간 : {}", System.currentTimeMillis());
+//        log.info("[LoggingFilter] 종료 시간 : {}", System.currentTimeMillis());
     }
 }
