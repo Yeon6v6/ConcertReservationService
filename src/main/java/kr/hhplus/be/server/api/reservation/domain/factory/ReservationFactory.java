@@ -16,7 +16,7 @@ public class ReservationFactory {
                 command.seatNumber(),
                 command.concertId(),
                 command.scheduleDate(),
-                command.price()
+                command.price() == null ? -1L : command.price()
         );
     }
 }

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -72,5 +73,25 @@ public class ReservationService {
      */
     public List<Reservation> findAllReservationsBySeatId(Long seatId) {
         return reservationRepository.findBySeatId(seatId);
+    }
+
+    /**
+     * 만료된 예약 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<Reservation> findExpiredReservations() {
+        return reservationRepository.findByExpiredAtBefore(LocalDateTime.now());
+    }
+
+    /**
+     * 예약 취소 (예약의 상태만 변경)
+     */
+    public void cancelReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 예약이 존재하지 않습니다. ID: " + reservationId));
+
+        reservation.cancel();  // 상태를 CANCELED로 변경
+        reservationRepository.save(reservation);
+        log.info("[ReservationService] 예약 취소 완료 >> Reservation ID: {}", reservationId);
     }
 }

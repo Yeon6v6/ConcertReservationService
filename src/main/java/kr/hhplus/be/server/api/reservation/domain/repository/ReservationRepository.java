@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -26,4 +27,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query("SELECT r FROM Reservation r WHERE r.seatId = :seatId")
     List<Reservation> findBySeatId(Long seatId);
+
+    List<Reservation> findByExpiredAtBefore(@Param("expiredAt") LocalDateTime expiredAt);
 }
