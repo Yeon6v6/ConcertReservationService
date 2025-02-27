@@ -26,19 +26,13 @@
 * [응답 속도 및 쿼리 실행 비교](queryboost/responsetest.md)
 * [인덱싱을 통한 성능 개선](queryboost/indexing.md)
 
+***
+
+* [장애 대응 보고서 및 부하 테스트](loadtest.md)
+
 ## MSA 아키텍쳐 도입 설계
 
 * [현재 API 분석(ReservationFacade)](msa/api_analyze.md)
 * [분산 트랜잭션 처리 방안](msa/dtp.md)
 * [현재 API 아키텍쳐 MSA 전환 설계 흐름](msa/msatd.md)
 * [Kafka 정리](https://cheese-2.gitbook.io/kafka/)
-
-## 부하 테스트 계획 및 시나리오 <a href="#loadtest" id="loadtest"></a>
-
-* [테스트 개요 및 목표](loadtest/undefined.md)
-* [부하 테스트 시나리오 설계](loadtest/test_scenario/README.md)
-  * [시나리오 1 : 정상 플로우 테스트](loadtest/test_scenario/normalflow.md)
-  * [시나리오 2 : 동시성 및 대기열 제어 검증](loadtest/test_scenario/concurrencyqueue.md)
-  * [시나리오 3 : 포인트 충전/사용 기능 및 Slow Query 검증](loadtest/test_scenario/point_slowquery.md)
-  * [시나리오 4 : 통합 예매 프로세스(특수 트래픽 상황) 테스트](loadtest/test_scenario/reservation.md)
-* [분산 예상 병목 지점 및 Slow Query 검증](loadtest/slow-query.md)
