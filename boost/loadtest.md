@@ -90,23 +90,23 @@ token_time.....................: avg=5.62ms min=1ms med=5ms max=166ms p(90)=7ms 
 
 ### **3.1. 전체 시스템 개선 조치**
 
-**✔️ 토큰 관리 개선**
+**✔️&#x20;**<mark style="background-color:purple;">**토큰 관리 개선**</mark>
 
 * 기존 DB에서 관리되던 토큰을 Redis로 전환하여, 빠른 조회 및 상태 변경이 가능하도록 개선
 * RedisTokenRepository, RedisTokenQueueRepository, TokenService 등을 활용해 Redis 기반 토큰 관리 체계를 구축
 * ([참고: 응답 테스트 문서](https://cheese-2.gitbook.io/hh_crs_doc/queryboost/responsetest))
 
-**✔️ 동시성 처리 최적화**
+**✔️&#x20;**<mark style="background-color:purple;">**동시성 처리 최적화**</mark>
 
 * 기존 Redis Lock 외에 **낙관적 락(Optimistic Locking)** 도입을 검토 및 적용하여, 동시 예약/결제 요청 시 락 경합을 최소화
 * ReservationFacade의 예약 및 결제 로직에서 락 적용을 강화
 
-**✔️ 쿼리 부하 개선**
+**✔️&#x20;**<mark style="background-color:purple;">**쿼리 부하 개선**</mark>
 
 * DB 쿼리 실행 계획(EXPLAIN ANALYZE)을 분석하여 비효율적인 쿼리를 최적화하고, Batch 처리 및 Lazy Loading 기법을 도입
 * 예약/결제 관련 쿼리에서 불필요한 풀 스캔을 방지
 
-**✔️ 인덱스 최적화**
+**✔️&#x20;**<mark style="background-color:purple;">**인덱스 최적화**</mark>
 
 * 기존 인덱스가 없던 부분에 대해 인덱스를 추가하여 쿼리 성능을 개선
   * **concert\_schedule** 테이블: `concert_id, is_sold_out` 복합 인덱스 추가
@@ -114,7 +114,7 @@ token_time.....................: avg=5.62ms min=1ms med=5ms max=166ms p(90)=7ms 
   * **reservation** 테이블: `user_id, status` 복합 인덱스 추가
 * ([참고: 인덱싱 개선 문서](https://cheese-2.gitbook.io/hh_crs_doc/queryboost/indexing))
 
-**✔️ 캐시 적용 강화**
+**✔️&#x20;**<mark style="background-color:purple;">**캐시 적용 강화**</mark>
 
 * ConcertService에서 좌석 조회 시 @Cacheable을 활용하여 동일 데이터에 대한 반복 조회를 방지
 * Redis를 통한 토큰 관리와 함께 캐시 전략을 보완하여, 전체 시스템 응답 속도를 향상
@@ -125,7 +125,7 @@ token_time.....................: avg=5.62ms min=1ms med=5ms max=166ms p(90)=7ms 
 
 ### **4-1. 성능 테스트 개요**
 
-*   **테스**<mark style="background-color:orange;">**트 대상 API**</mark>
+*   <mark style="background-color:orange;">**테스트 대상 API**</mark>
 
     1. `POST /tokens/issue` (토큰 발급)
     2. `GET /tokens/status` (대기열 상태 조회)
@@ -437,10 +437,10 @@ vus_max........................: 300  (min=300, max=300)
 
 ### **5-1. 전체 시스템 성능 요약**
 
-* **안정성**: 테스트 결과 HTTP 실패율(http\_req\_failed)은 약 2.47%로, 성공률은 약 97.5% (개선 필요)
-* **확장성**: 최대 300 VU(동시 사용자)에서 안정적으로 작동하였으며, 시나리오 테스트 기준으로는 초당 약 101건의 요청을 처리할 수 있음 (Queue 대기 시간 고려 필요)
-* **응답성**:  대부분의 API는 평균 285.73ms의 응답 시간을 보이나, 일부 요청에서는 최대 13.69초까지 지연된 사례 조회
-* **일관성**: 평균 응답 시간 대비 P95가 1.24초 등 일부 극단적 지연 사례가 존재하나, 전반적으로는 일관된 성능을 유지
+* <mark style="background-color:green;">**안정성**</mark>: 테스트 결과 HTTP 실패율(http\_req\_failed)은 약 2.47%로, 성공률은 약 97.5% (개선 필요)
+* <mark style="background-color:green;">**확장성**</mark>: 최대 300 VU(동시 사용자)에서 안정적으로 작동하였으며, 시나리오 테스트 기준으로는 초당 약 101건의 요청을 처리할 수 있음 (Queue 대기 시간 고려 필요)
+* <mark style="background-color:green;">**응답성**</mark>:  대부분의 API는 평균 285.73ms의 응답 시간을 보이나, 일부 요청에서는 최대 13.69초까지 지연된 사례 조회
+* <mark style="background-color:green;">**일관성**</mark>: 평균 응답 시간 대비 P95가 1.24초 등 일부 지연 사례가 존재하나, 전반적으로는 성능 유지
 
 ### **5-2. 최종 결론**
 
