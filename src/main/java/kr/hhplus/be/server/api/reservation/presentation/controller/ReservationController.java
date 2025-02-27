@@ -41,9 +41,9 @@ public class ReservationController {
             // ReservationResult => Presentation DTO 변환
             ReservationResponse reservationResponse = ReservationResponse.fromResult(reservationResult);
 
-            return ResponseEntity.ok(ApiResponse.success("좌석이 임시로 예약되었습니다.", reservationResponse));
+            return ApiResponse.success("좌석이 임시로 예약되었습니다.", reservationResponse);
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(ApiResponse.error(e.getErrorCode().getName(), e.getMessage()));
+            return ApiResponse.error(e.getErrorCode().getName(), e.getMessage());
         }
     }
 
@@ -64,10 +64,9 @@ public class ReservationController {
             // PaymentResult => Presentation DTO 변환
             PaymentResponse paymentResponse = PaymentResponse.fromResult(paymentResult);
 
-            return ResponseEntity.ok(ApiResponse.success("결제가 성공적으로 처리되었습니다.", paymentResponse));
+            return ApiResponse.success("결제가 성공적으로 처리되었습니다.", paymentResponse);
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(ApiResponse.error(e.getErrorCode().getName(), e.getMessage()));
+            return ApiResponse.error(e.getErrorCode().getName(), e.getMessage());
         }
     }
-
 }
