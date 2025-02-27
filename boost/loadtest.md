@@ -7,20 +7,26 @@
 * **시스템 개요**
   * **대기열**(Queue) 처리로 30초의 인위적 지연이 존재하지만, 이는 병목 요소가 아닌 의도된 대기임을 전제한다.
 * **성능 테스트 개요**
-  * **테스트 대상 API**
-    1. `POST /tokens/issue` (토큰 발급)
-    2. `GET /tokens/status` (대기열 상태 조회)
-    3. `GET /concerts/:id/dates/available` (일정 조회)
-    4. `GET /concerts/:id/seats/available` (좌석 조회)
-    5. `POST /reservations/:id/reserve-seats` (좌석 예약)
-    6. `POST /reservations/:id/payment` (결제)
-  * **테스트 시나리오**
-    1. 사용자별 **토큰 발급**
-    2. **대기열 30초**(인위적 지연)
-    3. 콘서트 일정 및 좌석 조회
-    4. **좌석 예약** 및 **결제** 요청
-    5. 각 API 단계별 응답 시간, 에러율 측정
-  * **테스트 환경**
+  *   <mark style="background-color:blue;">테스트 대상 API</mark>
+
+      1. `POST /tokens/issue` (토큰 발급)
+      2. `GET /tokens/status` (대기열 상태 조회)
+      3. `GET /concerts/:id/dates/available` (일정 조회)
+      4. `GET /concerts/:id/seats/available` (좌석 조회)
+      5. `POST /reservations/:id/reserve-seats` (좌석 예약)
+      6. `POST /reservations/:id/payment` (결제)
+
+
+  *   <mark style="background-color:blue;">테스트 시나리오</mark>
+
+      1. 사용자별 **토큰 발급**
+      2. **대기열 30초**(인위적 지연)
+      3. 콘서트 일정 및 좌석 조회
+      4. **좌석 예약** 및 **결제** 요청
+      5. 각 API 단계별 응답 시간, 에러율 측정
+
+
+  * <mark style="background-color:blue;">테스트 환경</mark>
     * **도구**: k6 스크립트(`integration-test.js`), Grafana 대시보드
     * **가상 유저(VU)**: 최대 300
     * **목표 지표**: 응답 시간(AVG, P95, P99), 에러율, 처리량(RPS), 커스텀 메트릭(`reserve_time`, `payment_time`, 등)
@@ -119,26 +125,32 @@ token_time.....................: avg=5.62ms min=1ms med=5ms max=166ms p(90)=7ms 
 
 ### **4-1. 성능 테스트 개요**
 
-* **테스트 대상 API**
-  1. `POST /tokens/issue` (토큰 발급)
-  2. `GET /tokens/status` (대기열 상태 조회)
-  3. `GET /concerts/:id/dates/available` (일정 조회)
-  4. `GET /concerts/:id/seats/available` (좌석 조회)
-  5. `POST /reservations/:id/reserve-seats` (좌석 예약)
-  6. `POST /reservations/:id/payment` (결제)
-* **테스트 시나리오**
+*   **테스**<mark style="background-color:orange;">**트 대상 API**</mark>
+
+    1. `POST /tokens/issue` (토큰 발급)
+    2. `GET /tokens/status` (대기열 상태 조회)
+    3. `GET /concerts/:id/dates/available` (일정 조회)
+    4. `GET /concerts/:id/seats/available` (좌석 조회)
+    5. `POST /reservations/:id/reserve-seats` (좌석 예약)
+    6. `POST /reservations/:id/payment` (결제)
+
+
+*   <mark style="background-color:orange;">**테스트 환경**</mark>
+
+    * **도구**: k6 스크립트(`integration-test.js`), Grafana 대시보드
+    * **가상 유저(VU)**: 최대 300
+    * **목표 지표**: 응답 시간(AVG, P95, P99), 에러율, 처리량(RPS), 커스텀 메트릭(`reserve_time`, `payment_time`, 등)
+
+
+* <mark style="background-color:orange;">**테스트 시나리오**</mark>
   1. 사용자별 토큰 발급 (POST /tokens/issue)
   2. 의도적 30초 대기(대기열 처리 – 분석 대상에서 제외)
   3. 예약 가능한 일정 및 좌석 조회
   4. 좌석 예약 요청 (POST /reservations/:id/reserve-seats)
   5. 결제 요청 (POST /reservations/:id/payment)
-* **테스트 환경**
-  * **도구**: k6 스크립트(`integration-test.js`), Grafana 대시보드
-  * **가상 유저(VU)**: 최대 300
-  * **목표 지표**: 응답 시간(AVG, P95, P99), 에러율, 처리량(RPS), 커스텀 메트릭(`reserve_time`, `payment_time`, 등)
 
 {% hint style="success" %}
-**테스트 시나리오**
+**테스트 시나리오 스크립트**
 {% endhint %}
 
 ```javascript
@@ -377,7 +389,7 @@ vus_max........................: 300  (min=300, max=300)
 #### **HTTP REQUEST 분석 내용**
 {% endhint %}
 
-<figure><img src=".gitbook/assets/image (1).png" alt=""><figcaption><p>Grafana Dashboard 의 HTTP REQUEST</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption><p>Grafana Dashboard 의 HTTP REQUEST</p></figcaption></figure>
 
 1. `/reservations/:id/payment` <mark style="color:yellow;">(500)</mark>
    1. Count=1로 500 에러가 1건 발생
@@ -403,7 +415,7 @@ vus_max........................: 300  (min=300, max=300)
 #### **핵심 지표 분석 내용**
 {% endhint %}
 
-<figure><img src=".gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
 1. **Peak RPS**: 약 **208** RPS로, 트래픽이 몰리는 구간에서 초당 200건 이상의 요청
 2. **Max Response Time**: **13.7초**
@@ -439,6 +451,6 @@ vus_max........................: 300  (min=300, max=300)
 ### **5-3. 개선 영역**
 
 * **응답 시간 일관성**:
-  * 일부 API에서 95번째 백분위 응답 시간이 평균보다 크게 높아 개선할 필요
+  * 일부 API에서 95번째 백분위 응답 시간이 평균보다 크게 높아 개선 필요
 * **에러 처리**:
   * 현재 성공률은 약 97.5%로, 에러 원인 분석 필요

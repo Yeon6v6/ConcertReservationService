@@ -17,18 +17,15 @@
 
 * [동시성 이슈 및 제어 방식 분석](concurrency/handling.md)
 
-## 쿼리 성능 개선 <a href="#queryboost" id="queryboost"></a>
+## 성능 개선 <a href="#boost" id="boost"></a>
 
-* [Redis를 사용한 캐싱 전략](queryboost/rediscache.md)
-* [캐시 스탬피드(Cache Stampede) 현상](queryboost/cachestampede.md)
-* [쿼리 성능 현황](queryboost/curquerystatus.md)
-* [Redis 및 캐싱을 적용한 성능 개선](queryboost/rediscacheboost.md)
-* [응답 속도 및 쿼리 실행 비교](queryboost/responsetest.md)
-* [인덱싱을 통한 성능 개선](queryboost/indexing.md)
-
-***
-
-* [장애 대응 보고서 및 부하 테스트](loadtest.md)
+* [Redis를 사용한 캐싱 전략](boost/rediscache.md)
+* [캐시 스탬피드(Cache Stampede) 현상](boost/cachestampede.md)
+* [쿼리 성능 현황](boost/curquerystatus.md)
+* [Redis 및 캐싱을 적용한 성능 개선](boost/rediscacheboost.md)
+* [응답 속도 및 쿼리 실행 비교](boost/responsetest.md)
+* [인덱싱을 통한 성능 개선](boost/indexing.md)
+* [장애 대응 보고서 및 부하 테스트](boost/loadtest.md)
 
 ## MSA 아키텍쳐 도입 설계
 
