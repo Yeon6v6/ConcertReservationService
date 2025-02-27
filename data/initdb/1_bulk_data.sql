@@ -59,9 +59,12 @@ FROM concert c
     SELECT 2 UNION ALL
     SELECT 3 UNION ALL
     SELECT 4 UNION ALL
-    SELECT 5
+    SELECT 5 UNION ALL
+    SELECT 6 UNION ALL
+    SELECT 7 UNION ALL
+    SELECT 8
 ) seq
-WHERE seq.seq <= 3 OR (seq.seq > 3 AND RAND() < 0.5);
+WHERE seq.seq <= 7 OR (seq.seq > 7 AND RAND() < 0.5);
 
 
 -- ------------------------------------------------------------
