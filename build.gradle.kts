@@ -69,6 +69,8 @@ dependencies {
 	// Kafka
 	implementation("org.springframework.kafka:spring-kafka:3.3.1")
 	testImplementation("org.springframework.kafka:spring-kafka-test")
+
+	implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.8.1")
 }
 
 tasks.withType<Test> {

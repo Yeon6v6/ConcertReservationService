@@ -1,11 +1,10 @@
 package kr.hhplus.be.server.api.reservation.application.facade;
 
 import kr.hhplus.be.server.api.common.exception.CustomException;
-import kr.hhplus.be.server.api.common.kafka.outbox.OutboxRepository;
 import kr.hhplus.be.server.api.common.lock.annotation.RedisLock;
 import kr.hhplus.be.server.api.concert.application.dto.response.ConcertSeatResult;
 import kr.hhplus.be.server.api.concert.application.service.ConcertService;
-import kr.hhplus.be.server.api.concert.exception.SeatErrorCode;
+import kr.hhplus.be.server.api.concert.domain.repository.SeatRepository;
 import kr.hhplus.be.server.api.reservation.application.dto.command.PaymentCommand;
 import kr.hhplus.be.server.api.reservation.application.dto.command.ReservationCommand;
 import kr.hhplus.be.server.api.reservation.application.dto.result.PaymentResult;
@@ -23,7 +22,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -35,6 +33,7 @@ public class ReservationFacade {
     private final UserService userService;
     private final TokenService tokenService;
     private final ApplicationEventPublisher eventPublisher;
+    private final SeatRepository seatRepository;
 
     /**
      * 좌석 예약
@@ -44,11 +43,22 @@ public class ReservationFacade {
     @RedisLock(prefix = "seat:", key = "#reservationCmd.seatId")
     @Transactional
     public ReservationResult reserveSeat(ReservationCommand reservationCmd) {
-        // 1. 좌석 상태 확인
+        // 1. 좌석 선점
         ConcertSeatResult seatResult = concertService.reserveSeat(reservationCmd.concertId(), reservationCmd.scheduleDate(), reservationCmd.seatNumber());
+        log.info("reservedSeat: {}", seatResult);
+
+        // 2. 좌석 선점 시 생성한 데이터와 ReservationCommand를 통해 예약 정보 생성
+        ReservationCommand updatedReservationCmd = new ReservationCommand(
+                reservationCmd.userId(),
+                seatResult.concertId(),
+                seatResult.id(),
+                seatResult.seatNumber(),
+                seatResult.scheduleDate(),
+                seatResult.price()
+        );
 
         // 2. 예약 정보 생성
-        ReservationResult reservationResult = reservationService.createReservation(reservationCmd);
+        ReservationResult reservationResult = reservationService.createReservation(updatedReservationCmd);
 
         // 3. 트랜잭션 커밋 전 Outbox 저장 이벤트 발행
         eventPublisher.publishEvent(new ConcertSeatReservedEvent(

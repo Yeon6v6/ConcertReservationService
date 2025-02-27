@@ -155,7 +155,7 @@ public class ConcertService {
                 // **예약이 취소되어 좌석이 생김 → 매진 해제**
                 schedule = schedule.releaseSoldOut();
             }
-                concertScheduleRepository.save(schedule);
+            concertScheduleRepository.save(schedule);
         }catch (Exception e) {
             log.error("[ConcertService] 콘서트 매진 상태 업데이트 실패 >> Concert ID: {}, Sold Out: {}", concertId, schedule.isSoldOut(), e);
             throw e;

@@ -4,7 +4,7 @@ import { Trend } from 'k6/metrics';
 import { SharedArray } from 'k6/data';
 import { randomItem } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 
-/*export const options = {
+export const options = {
     scenarios: {
         ticket_reservation: {
             executor: 'ramping-vus',
@@ -20,19 +20,19 @@ import { randomItem } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
         http_req_duration: ['p(95)<2000'], // 95% 요청이 2초 이내
         http_req_failed: ['rate<0.01'], // 에러율 1% 이하 유지
     },
-};*/
+};
 
-export const options = {
+/*export const options = {
     scenarios: {
         ticket_reservation: {
             executor: 'constant-arrival-rate',
             rate: 10,
             timeUnit: '1s',
-            duration: '15s',
+            duration: '10s',
             preAllocatedVUs: 10,
         },
     },
-};
+};*/
 
 const BASE_URL = 'http://host.docker.internal:8080';
 
@@ -52,26 +52,26 @@ export default function () {
 
     // Step 1: 토큰 발급 요청
     let start = new Date();
-    let res = http.post(`${BASE_URL}/tokens/issue`, JSON.stringify({ userId }), {
+    const tokenRes = http.post(`${BASE_URL}/tokens/issue`, JSON.stringify({ userId }), {
         headers: { 'Content-Type': 'application/json' },
     });
     tokenTime.add(new Date() - start);
 
-    if (res.status !== 200 || !res.body) {
-        console.error(`토큰 발급 실패: ${res.status}, ${res.body}`);
+    if (tokenRes.status !== 200 || !tokenRes.body) {
+        console.error(`토큰 발급 실패: ${tokenRes.status}, ${tokenRes.body}`);
         return;
     }
 
     let parsedTokenResp;
     try {
-        parsedTokenResp = JSON.parse(res.body);
+        parsedTokenResp = JSON.parse(tokenRes.body);
     } catch (e) {
-        console.error(`JSON 파싱 오류: ${res.body}`);
+        console.error(`JSON 파싱 오류: ${tokenRes.body}`);
         return;
     }
 
     if (!parsedTokenResp.data) {
-        console.error(`토큰 발급 API 응답 데이터 없음: ${res.body}`);
+        console.error(`토큰 발급 API 응답 데이터 없음: ${tokenRes.body}`);
         return;
     }
 
@@ -103,92 +103,72 @@ export default function () {
 
     // Step 3: 예약 가능한 일정 조회
     start = new Date();
-    res = http.get(`${BASE_URL}/concerts/${concertId}/dates/available`);
+    const scheduleRes = http.get(`${BASE_URL}/concerts/${concertId}/dates/available`);
     scheduleTime.add(new Date() - start);
 
-    if (res.status !== 200 || !res.body) {
-        console.error('예약 가능한 날짜 조회 실패:', res.status, res.body);
+    if (scheduleRes.status !== 200 || !scheduleRes.body) {
+        console.error('예약 가능한 날짜 조회 실패:', scheduleRes.status, scheduleRes.body);
         return;
     }
 
-    const parsedDates = JSON.parse(res.body);
+    const parsedDates = JSON.parse(scheduleRes.body);
     if (!parsedDates.data || parsedDates.data.length === 0) {
         console.error('예약 가능한 날짜 없음');
         return;
     }
 
     const scheduleDate = randomItem(parsedDates.data);
-    console.log(`선택된 예약 날짜: ${scheduleDate}`);
+    // console.log(`선택된 예약 날짜: ${scheduleDate}`);
 
     // Step 4: 예약 가능한 좌석 조회
-    let lockedSeats = new Set();
-    let selectedSeatId = findAvailableSeat(concertId, scheduleDate, token, lockedSeats);
+    const lockedSeats = new Set();
 
-    if (!selectedSeatId) {
+    const selectedSeat = findAvailableSeat(concertId, scheduleDate, token, lockedSeats);
+    if (!selectedSeat) {
         console.error("예약 가능한 좌석을 찾지 못했습니다. 예약 요청을 중단합니다.");
         return;
     }
 
     // Step 5: 좌석 예약 요청 및 "SEAT_ALREADY_RESERVED" 자동 처리
-    let reservationSuccess = false;
-    let seatAttempt = 0;
-    let maxSeatRetries = 5;
-    let reservationId = null;
-
-    while (seatAttempt < maxSeatRetries && !reservationSuccess) {
-        if (!selectedSeatId) {
-            console.error("선택된 좌석이 null입니다. 새로운 좌석을 찾습니다.");
-            selectedSeatId = findAvailableSeat(concertId, scheduleDate, token, lockedSeats);
-            if (!selectedSeatId) {
-                console.error("모든 좌석이 잠겨 있어 예약을 중단합니다.");
-                return;
-            }
-        }
-
+    const reservationId = (() => {
         const reservationPayload = JSON.stringify({
             userId: userId,
             date: scheduleDate,
-            seatId: selectedSeatId,
-            seatNo: 1
+            seatId: selectedSeat.id,
+            seatNo: selectedSeat.seatNumber
         });
 
-        console.log("좌석 예약 요청:", reservationPayload);
+        console.log("좌석 예약 요청 : ", reservationPayload);
 
+        // 좌석 선점
         start = new Date();
         const reservationUrl = `${BASE_URL}/reservations/${concertId}/reserve-seats`;
-        res = http.post(reservationUrl, reservationPayload, {
-            headers: { 'Content-Type': 'application/json', 'QUEUE-TOKEN': token },
+        const reservedSeatRes = http.post(reservationUrl, reservationPayload, {
+            headers: {'Content-Type': 'application/json', 'QUEUE-TOKEN': token},
         });
         reserveTime.add(new Date() - start);
 
-        if (res.status === 400 && res.body.includes("SEAT_ALREADY_RESERVED")) {
-            console.error(`좌석이 이미 예약됨: ${selectedSeatId}, 다른 좌석을 선택합니다.`);
-            lockedSeats.add(selectedSeatId); // 해당 좌석을 잠긴 좌석 목록에 추가
-            selectedSeatId = findAvailableSeat(concertId, scheduleDate, token, lockedSeats);
-            seatAttempt++;
-            sleep(1); // 1초 대기 후 재시도
-            continue;
-        } else if (res.status === 200) {
-            reservationSuccess = true;
-            const parsedReservation = JSON.parse(res.body);
-            reservationId = parsedReservation.data?.reservationId;
-            console.log(`좌석 예약 성공! 예약 ID: ${reservationId} / 좌석 ID : ${selectedSeatId}` );
-            sleep(3); // 예약 성공 후 서버가 상태를 업데이트할 시간을 주기 위해 3초 대기
-        } else {
-            console.error('좌석 예약 실패:', res.status, res.body);
-            return;
+        if (reservedSeatRes.status === 200) {
+            console.log("--------------------")
+            const parsedReservation = JSON.parse(reservedSeatRes.body);
+            console.log(parsedReservation.data)
+            // console.log(`좌석 예약 성공! 예약 ID: ${reservationId} / 좌석 ID : ${selectedSeatId}`);
+            console.log("--------------------")
+            return parsedReservation.data.reservationId;
         }
+    })();
+
+    if (!reservationId) {
+        console.error(`좌석 예약 실패: ${selectedSeat.id}`);
+        lockedSeats.add(selectedSeat); // 해당 좌석을 잠긴 좌석 목록에 추가
     }
 
-    if (!reservationSuccess || !reservationId) {
-        console.error("최대 재시도 횟수를 초과하여 예약을 중단합니다.");
-        return;
-    }
+    sleep(3); // 예약 성공 후 서버가 상태를 업데이트할 시간을 주기 위해 3초 대기
 
     // Step 6: 결제 요청
     const paymentPayload = JSON.stringify({
         userId: userId,
-        seatId: selectedSeatId,
+        seatId: selectedSeat.id,
         paymentInfo: {
             amount: 50000,  // 결제 금액
             method: "CREDIT_CARD"  // 결제 방법
@@ -200,19 +180,19 @@ export default function () {
     const paymentUrl = `${BASE_URL}/reservations/${reservationId}/payment`;
 
     start = new Date();
-    res = http.post(paymentUrl, paymentPayload, {
+    const paymentResponse = http.post(paymentUrl, paymentPayload, {
         headers: { 'Content-Type': 'application/json', 'QUEUE-TOKEN': token },
     });
     paymentTime.add(new Date() - start);
 
 // 결제 성공/실패 처리
-    if (res.status !== 200) {
-        console.error('결제 실패:', res.status, res.body);
+    if (paymentResponse.status !== 200) {
+        console.error('결제 실패:', paymentResponse.status, paymentResponse.body);
         return;
     }
 
-    const parsedPayment = JSON.parse(res.body);
-    console.log(`결제 완료. 남은 잔액: ${parsedPayment.remainingBalance}`);
+    const parsedPayment = JSON.parse(paymentResponse.body);
+    console.log(`결제 완료. 결제된 금액: ${parsedPayment.paidAmount}`);
 
     sleep(1);
 }
@@ -221,9 +201,9 @@ export default function () {
 function findAvailableSeat(concertId, scheduleDate, token, lockedSeats) {
     let retryCount = 0;
     const maxRetries = 5; // 최대 5회 재시도
-    let seatId = null;
+    let seat = null;
 
-    while (!seatId && retryCount < maxRetries) {
+    while (!seat && retryCount < maxRetries) {
         let res = http.get(`${BASE_URL}/concerts/${concertId}/seats/available?scheduleDate=${scheduleDate}`, {
             headers: { 'QUEUE-TOKEN': token },
         });
@@ -250,8 +230,7 @@ function findAvailableSeat(concertId, scheduleDate, token, lockedSeats) {
             continue;
         }
 
-        seatId = randomItem(availableSeats).id;
+        seat = randomItem(availableSeats);
     }
-
-    return seatId;
+    return seat;
 }

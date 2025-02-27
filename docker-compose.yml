@@ -22,25 +22,25 @@ services:
       retries: 5
 #      start_period: 30s
 
-  #  mysql-init:
-  #    image: mysql:8.0
-  #    depends_on:
-  #      mysql:
-  #        condition: service_healthy
-  #    volumes:
-  #      - ./data/initdb:/docker-entrypoint-initdb.d
-  #    entrypoint: ["/bin/sh", "-c"]
-  #    command:
-  #      - |
-  #        echo "Waiting for MySQL to be ready...";
-  #        sleep 10;
-  #        echo "Running initial schema setup...";
-  #        mysql -h mysql -P 3306 -uapplication -papplication -Dhhplus --connect-timeout=30 < /docker-entrypoint-initdb.d/0_schema.sql;
-  #        echo "Schema setup complete.";
-  #        echo "Running initial bulk data scripts...";
-  #        mysql -h mysql -P 3306 -uapplication -papplication -Dhhplus < /docker-entrypoint-initdb.d/1_bulk_data.sql;
-  #        echo "MySQL initialization complete.";
-  #    restart: "no"
+  mysql-init:
+    image: mysql:8.0
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./data/initdb:/docker-entrypoint-initdb.d
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Waiting for MySQL to be ready...";
+        sleep 10;
+        echo "Running initial schema setup...";
+        mysql -h mysql -P 3306 -uapplication -papplication -Dhhplus --connect-timeout=30 < /docker-entrypoint-initdb.d/0_schema.sql;
+        echo "Schema setup complete.";
+        echo "Running initial bulk data scripts...";
+        mysql -h mysql -P 3306 -uapplication -papplication -Dhhplus < /docker-entrypoint-initdb.d/1_bulk_data.sql;
+        echo "MySQL initialization complete.";
+    restart: "no"
 
   redis:
     image: redis:latest
@@ -50,32 +50,33 @@ services:
     volumes:
       - ./data/redis:/data
 
-#  influxdb:
-#    image: influxdb:1.8
-#    container_name: influxdb
-#    ports:
-#      - "8086:8086"
-#    volumes:
-#      - ./influxdb:/var/lib/influxdb
-#    environment:
-#      - INFLUXDB_DB=hhplus
-#      - INFLUXDB_ADMIN_USER=admin
-#      - INFLUXDB_ADMIN_PASSWORD=admin123
-#
-#  grafana:
-#    image: grafana/grafana
-#    container_name: grafana
-#    ports:
-#      - "3000:3000"
-#    restart: always
-#    volumes:
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./influxdb:/var/lib/influxdb
+    environment:
+      - INFLUXDB_DB=hhplus
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin123
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    restart: always
+    volumes:
 #      - ./grafana:/var/lib/grafana
-#    environment:
-#      - GF_SECURITY_ADMIN_USER=admin
-#      - GF_SECURITY_ADMIN_PASSWORD=admin
-#      - GF_USERS_ALLOW_SIGN_UP=false
-#    depends_on:
-#      - influxdb
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - influxdb
 #
 #  k6:
 #    image: grafana/k6
@@ -134,6 +135,7 @@ services:
 
 volumes:
   mysql_data:
+  grafana_data:
 
 networks:
   default:
