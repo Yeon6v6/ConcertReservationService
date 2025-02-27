@@ -34,4 +34,8 @@ public class ConcertSchedule {
     public ConcertSchedule markSoldOut() {
         return this.toBuilder().isSoldOut(true).build();
     }
+    // 매진 상태 해제 (예약 취소 발생 시)
+    public ConcertSchedule releaseSoldOut() {
+        return this.toBuilder().isSoldOut(false).build();
+    }
 }

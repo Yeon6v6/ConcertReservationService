@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.api.concert.domain.entity;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import kr.hhplus.be.server.api.common.exception.CustomException;
 import kr.hhplus.be.server.api.common.type.SeatStatus;
@@ -28,12 +29,13 @@ public class Seat {
     private int seatNumber; // 좌석 번호
 
     private Long concertId; // 해당 좌석이 속한 콘서트
+    @Temporal(TemporalType.DATE)
     private LocalDate scheduleDate; // 해당 좌석이 속한 일정
 
     @Enumerated(EnumType.STRING)
     private SeatStatus status; // 좌석 상태
 
-    private Long price; // 좌석 금액
+    private Long price; // 좌석 금액 (임시예약 상태는 -1)
 
     /**
      * 좌석 예약

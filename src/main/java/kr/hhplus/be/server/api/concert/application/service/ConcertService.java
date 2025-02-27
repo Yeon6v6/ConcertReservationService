@@ -31,7 +31,12 @@ public class ConcertService {
     /**
      * 특정 콘서트의 예약 가능한 날짜 조회
      */
-    @Cacheable(value = "availableDates", key = "'concerts:' + #concertId", cacheManager = "cacheManager")
+    @Cacheable(
+            value = "availableSeats",
+            key = "'concert:' + #concertId + ':schedule:' + #scheduleDate",
+            cacheManager = "cacheManager",
+            unless = "#result == null || #result.isEmpty()"
+    )
     public List<LocalDate> getAvailableDateList(Long concertId){
         try {
             return concertScheduleRepository.findByConcertIdAndIsSoldOut(concertId, false)
@@ -48,7 +53,12 @@ public class ConcertService {
     /**
      * 특정 날짜의 예약 가능한 좌석 조회
      */
-    @Cacheable(value = "availableSeats", key = "'concert:' + #concertId + ':schedule:' + #scheduleDate", cacheManager = "cacheManager")
+    @Cacheable(
+            value = "availableSeats",
+            key = "'concert:' + #concertId + ':schedule:' + #scheduleDate",
+            cacheManager = "cacheManager",
+            unless = "#result == null || #result.isEmpty()"
+    )
     public List<ConcertSeatResult> getAvailableSeatList(Long concertId, LocalDate scheduleDate) {
         try {
             return seatRepository.findAvailableSeatList(concertId, scheduleDate)
@@ -64,11 +74,16 @@ public class ConcertService {
     /**
      * 좌석 예약
      */
-    @CacheEvict(value = "availableSeats", key = "'concert:' + #seat.getConcertId() + ':schedule:' + #seat.getScheduleDate()") // 캐시 무효화
-    public ConcertSeatResult reserveSeat(Long seatId) {
+//    @CacheEvict(value = "availableSeats", key = "'concert:' + #seat.getConcertId() + ':schedule:' + #seat.getScheduleDate()") // 캐시 무효화
+    @CacheEvict(value = "availableSeats", key = "'concert:' + #concertId + ':schedule:' + #scheduleDate")
+    public ConcertSeatResult reserveSeat(Long concertId, LocalDate scheduleDate, int seatNumber) {
         try {
-            Seat seat = seatRepository.findById(seatId)
+            Seat seat = seatRepository.findByConcertIdAndScheduleDateAndSeatNumber(concertId, scheduleDate, seatNumber)
                     .orElseThrow(() -> new CustomException(SeatErrorCode.SEAT_NOT_FOUND));
+
+            if(seat.getStatus() != SeatStatus.AVAILABLE) {
+                throw new CustomException(SeatErrorCode.SEAT_ALREADY_RESERVED);
+            }
 
             seat.reserve(); // 좌석 상태 변경
             Seat reservedSeat = seatRepository.save(seat);
@@ -78,7 +93,30 @@ public class ConcertService {
 
             return ConcertSeatResult.from(reservedSeat);
         } catch (CustomException e) {
-            log.error("[ConcertService] 좌석 예약 실패 >> Seat ID: {}", seatId, e);
+            log.error("[ConcertService] 좌석 예약 실패 >> Concert ID : {}, Seat Number: {}", concertId, seatNumber, e);
+            throw e;
+        }
+    }
+
+    /**
+     * 좌석 예약 가능 상태로 변경
+     */
+    public ConcertSeatResult releaseSeat(Long seatId) {
+        try {
+            Seat seat = seatRepository.findById(seatId)
+                    .orElseThrow(() -> new CustomException(SeatErrorCode.SEAT_NOT_FOUND));
+
+            if(seat.getStatus() != SeatStatus.AVAILABLE) {
+                seat.cancelReservation(); // 좌석 상태 변경
+            }
+            Seat reservedSeat = seatRepository.save(seat);
+
+            // 콘서트 일정 매진 여부 체크
+            updateConcertSoldOutStatus(seat.getConcertId(), seat.getScheduleDate());
+
+            return ConcertSeatResult.from(reservedSeat);
+        } catch (CustomException e) {
+            log.error("[ConcertService] 좌석 예약 취소 실패 >> Seat ID : {}", seatId, e);
             throw e;
         }
     }
@@ -86,7 +124,7 @@ public class ConcertService {
     /**
      * 결제로 상태 업데이트 (Facade에서 트랜잭션 관리)
      */
-    @CacheEvict(value = "availableSeats", key = "'concert:' + #seat.getConcertId() + ':schedule:' + #seat.getScheduleDate()") //캐시 무효화
+    @CacheEvict(value = "availableSeats", key = "'concert:' + #concertId + ':schedule:' + #scheduleDate")
     public ConcertSeatResult payForSeat(Long seatId) {
         try{
             Seat seat = seatRepository.findById(seatId)
@@ -107,7 +145,6 @@ public class ConcertService {
             log.error("[ConcertService] 좌석 결제 상태 변경 실패 >> Seat ID: {}", seatId, e);
             throw e;
         }
-
     }
 
     /**
@@ -119,10 +156,16 @@ public class ConcertService {
             schedule = concertScheduleRepository.findSchedule(concertId, scheduleDate)
                     .orElseThrow(() -> new CustomException(ConcertErrorCode.CONCERT_NOT_FOUND));
 
-            if (seatRepository.countAvailableSeats(concertId, scheduleDate) == 0) {
-                schedule.markSoldOut();
-                concertScheduleRepository.save(schedule);
+            int availableSeats = seatRepository.countAvailableSeats(concertId, scheduleDate);
+
+            if (availableSeats == 0 && !schedule.isSeatSoldOut()) {
+                // **모든 좌석이 예약됨 → 매진 처리**
+                schedule = schedule.markSoldOut();
+            } else if (availableSeats > 0 && schedule.isSeatSoldOut()) {
+                // **예약이 취소되어 좌석이 생김 → 매진 해제**
+                schedule = schedule.releaseSoldOut();
             }
+            concertScheduleRepository.save(schedule);
         }catch (Exception e) {
             log.error("[ConcertService] 콘서트 매진 상태 업데이트 실패 >> Concert ID: {}, Sold Out: {}", concertId, schedule.isSoldOut(), e);
             throw e;

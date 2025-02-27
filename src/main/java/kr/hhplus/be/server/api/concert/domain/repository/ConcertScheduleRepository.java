@@ -18,6 +18,7 @@ public interface ConcertScheduleRepository extends JpaRepository<ConcertSchedule
     Optional<ConcertSchedule> findSchedule(Long concertId, LocalDate scheduleDate);
 
     @Query("SELECT cs.isSoldOut FROM ConcertSchedule cs WHERE cs.concertId = :concertId AND cs.scheduleDate = :scheduleDate")
-    Boolean isScheduleSoldOut(@Param("seatId") Long seatId);
+    Boolean isScheduleSoldOut(@Param("concertId") Long concertId, @Param("scheduleDate") LocalDate scheduleDate);
+
 
 }

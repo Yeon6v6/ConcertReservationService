@@ -24,7 +24,10 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
     Optional<Seat> findByIdWithLock(@Param("seatId") Long seatId);*/
 
     Optional<Seat> findById(@Param("seatId") Long Id); // 비관적 락 제거
+    @Query("SELECT s FROM Seat s WHERE s.concertId = :concertId AND s.scheduleDate = :scheduleDate AND s.seatNumber = :seatNumber")
+    Optional<Seat> findByConcertIdAndScheduleDateAndSeatNumber(Long concertId, LocalDate scheduleDate, int seatNumber);
 
     @Query("SELECT COUNT(s) FROM Seat s WHERE s.concertId = :concertId AND s.scheduleDate = :scheduleDate AND s.status = 'AVAILABLE'")
-    long countAvailableSeats(@Param("concertId") Long concertId, @Param("scheduleDate") LocalDate scheduleDate);
+    int countAvailableSeats(@Param("concertId") Long concertId, @Param("scheduleDate") LocalDate scheduleDate);
+
 }
