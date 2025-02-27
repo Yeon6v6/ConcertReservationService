@@ -7,6 +7,7 @@ import kr.hhplus.be.server.api.token.domain.repository.TokenQueueRepository;
 import kr.hhplus.be.server.api.token.domain.repository.TokenRepository;
 import kr.hhplus.be.server.api.token.exception.TokenErrorCode;
 import kr.hhplus.be.server.api.token.presentation.controller.TokenController;
+import kr.hhplus.be.server.api.token.presentation.dto.TokenStatusResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,11 +31,6 @@ public class TokenService {
      */
     public RedisTokenResult issueToken(Long userId) {
         logger.info("[TOKEN ISSUE] 사용자 {}가 토큰 발급을 요청함", userId);
-
-        if (isUserAlreadyInQueue(userId)) {
-            logger.error("[TOKEN ISSUE] 사용자 {}는 이미 대기열에 등록되어 있음", userId);
-            throw new CustomException(TokenErrorCode.USER_ALREADY_IN_QUEUE);
-        }
 
         // 토큰 ID 생성
         Long tokenId = tokenRepository.generateTokenId();
@@ -81,5 +77,18 @@ public class TokenService {
     public void expireToken(Long tokenId) {
         tokenRepository.deleteToken(tokenId); // Redis에서 삭제하여 만료 처리
         tokenQueueRepository.removeTokenQueue(tokenId); // 대기열에서도 삭제
+    }
+
+    /**
+     * 토큰 상태 조회
+     */
+    public TokenStatusResponse getTokenStatus(Long tokenId) {
+        boolean isActive = tokenRepository.isValidToken(tokenId);
+        String status = isActive ? TokenStatus.ACTIVE.toString() : TokenStatus.PENDING.toString();
+        Long ttl = null;
+        if (isActive) {
+            ttl = tokenRepository.getTokenExpiration(tokenId);
+        }
+        return new TokenStatusResponse(tokenId, status, ttl);
     }
 }

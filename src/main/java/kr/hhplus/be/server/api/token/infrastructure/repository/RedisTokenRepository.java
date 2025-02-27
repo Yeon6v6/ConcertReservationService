@@ -1,6 +1,5 @@
 package kr.hhplus.be.server.api.token.infrastructure.repository;
 
-import kr.hhplus.be.server.api.common.type.TokenStatus;
 import kr.hhplus.be.server.api.token.TokenConstants;
 import kr.hhplus.be.server.api.token.domain.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +9,8 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Repository
 @RequiredArgsConstructor
@@ -62,6 +59,18 @@ public class RedisTokenRepository implements TokenRepository {
      */
     @Override
     public void setTokenExpiration(Long tokenId, long expirationTime) {
+        // Redis Hash에서 토큰 상태를 ACTIVE로 업데이트
+        String key = tokenKey(tokenId);
+        hashOperations.put(key, "status", "ACTIVE");
+
+        if (expirationTime <= 0) {
+            expirationTime = 1; // 최소 TTL 보장
+        }
+
+        // Hash 키에 실제 만료 시간을 설정 (expire 적용)
+        redisTemplate.expire(key, expirationTime, TimeUnit.SECONDS);
+
+        // 활성 토큰 전용 ZSET에도 TTL 정보를 저장 (만료 시간 점수 업데이트)
         long newExpiration = Math.min(expirationTime, Instant.now().getEpochSecond() + TokenConstants.MAX_TTL_SECONDS);
         zSetOperations.add(TokenConstants.TOKEN_ACTIVE_PREFIX, tokenId.toString(), newExpiration);
     }
@@ -101,5 +110,14 @@ public class RedisTokenRepository implements TokenRepository {
     @Override
     public void deleteToken(Long tokenId) {
         redisTemplate.delete(tokenKey(tokenId));
+    }
+
+    /**
+     * 토큰 상태 조회
+     */
+    @Override
+    public Long getTokenExpiration(Long tokenId) {
+        Double expirationTime = zSetOperations.score(TokenConstants.TOKEN_ACTIVE_PREFIX, tokenId.toString());
+        return expirationTime != null ? expirationTime.longValue() : null;
     }
 }
