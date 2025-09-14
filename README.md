@@ -20,7 +20,7 @@
 
 ### 🛠 기술 스택
 
-* **Back** : Spring Boot, Java 11+
+* **Back** : Spring Boot, Java 17+
 * **DB** : MySQL
 * **통신 방식**: RESTful API
 
