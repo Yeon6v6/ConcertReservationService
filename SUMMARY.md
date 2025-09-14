@@ -1,6 +1,6 @@
 # Table of contents
 
-* [콘서트 예약 시스템 🎫](README.md)
+* [콘서트 좌석 예약 시스템 🎫](README.md)
 
 ## 요구사항 분석자료 <a href="#diagram" id="diagram"></a>
 

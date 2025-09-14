@@ -1,6 +1,4 @@
-# 콘서트 예약 시스템 🎫
-
-## 🗂️ **GitBook 문서** : (🔗) [HH CRS Documentation](https://cheese-2.gitbook.io/hh_crs_doc)
+# 콘서트 좌석 예약 시스템 🎫
 
 ***
 
