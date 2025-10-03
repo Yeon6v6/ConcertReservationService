@@ -21,7 +21,6 @@ public class UserService {
      */
     public UserBalanceResult getBalance(Long userId) {
         User user = findOrCreateUser(userId);
-        log.info("[UserService] 잔액 조회 성공 >> User ID: {}, Balance: {}", userId, user.getBalance());
         return UserBalanceResult.from(user);
     }
 
@@ -31,22 +30,18 @@ public class UserService {
      * - 결제 가능 금액 반환
      */
     public Long processPayment(Long userId, Long totalAmount) {
-        log.info("[UserService] 결제 처리 시작 >> User ID: {}, Total Amount: {}", userId, totalAmount);
-
         User user = findOrCreateUser(userId);
 
         // 부족한 금액 계산
         Long insufficientAmount = totalAmount - user.getBalance();
         if (insufficientAmount > 0) {
             user.chargeBalance(insufficientAmount);
-            log.info("[UserService] 부족한 금액 충전 >> User ID: {}, Charged Amount: {}", userId, insufficientAmount);
         }
 
         // 잔액에서 결제 금액 차감
         user.deductBalance(totalAmount);
         userRepository.save(user);
 
-        log.info("[UserService] 결제 처리 완료 >> User ID: {}, Total Amount: {}", userId, totalAmount);
         return totalAmount;
     }
 
@@ -55,13 +50,9 @@ public class UserService {
      */
     @Transactional
     public Long chargeBalance(Long userId, Long amount) {
-        log.info("[UserService] 잔액 충전 시작 >> User ID: {}, Amount: {}", userId, amount);
-
         User user = findOrCreateUser(userId);
         user.chargeBalance(amount);
         userRepository.save(user);
-
-        log.info("[UserService] 잔액 충전 완료 >> User ID: {}, Current Balance: {}", userId, user.getBalance());
         return user.getBalance();
     }
 
@@ -70,13 +61,9 @@ public class UserService {
      */
     @Transactional
     public Long deductBalance(Long userId, Long amount) {
-        log.info("[UserService] 잔액 차감 시작 >> User ID: {}, Amount: {}", userId, amount);
-
         User user = findOrCreateUser(userId);
         user.deductBalance(amount);
         userRepository.save(user);
-
-        log.info("[UserService] 잔액 차감 완료 >> User ID: {}, Current Balance: {}", userId, user.getBalance());
         return user.getBalance();
     }
 

@@ -23,10 +23,7 @@ public class TokenService {
      * 토큰 발급 (상태: PENDING)
      */
     public RedisTokenResult issueToken(Long userId) {
-        log.debug("[TOKEN ISSUE] 사용자 {}가 토큰 발급을 요청함", userId);
-
         if (isUserAlreadyInQueue(userId)) {
-            log.warn("[TOKEN ISSUE] 사용자 {}는 이미 대기열에 등록되어 있음", userId);
             throw new CustomException(TokenErrorCode.USER_ALREADY_IN_QUEUE);
         }
 
@@ -42,10 +39,8 @@ public class TokenService {
 
         // 대기 순위 조회
         Long queuePosition = tokenQueueRepository.getQueuePosition(tokenId);
-        log.info("[TOKEN ISSUE] 토큰 발급 완료 >> User ID: {}, Token ID: {}, Queue Position: {}", userId, tokenId, queuePosition);
 
         if (queuePosition == null) {
-            log.error("[TOKEN ISSUE] 토큰 {}이 대기열에 정상적으로 등록되지 않음", tokenId);
             throw new CustomException(TokenErrorCode.QUEUE_POSITION_NOT_FOUND);
         }
 

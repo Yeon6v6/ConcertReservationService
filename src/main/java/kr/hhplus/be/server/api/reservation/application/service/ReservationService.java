@@ -35,8 +35,6 @@ public class ReservationService {
      * 예약 생성(좌석 예약)
      */
     public ReservationResult createReservation(ReservationCommand command) {
-        log.info("[ReservationService] 예약 생성 시작 >> User ID: {}, Seat ID: {}", command.userId(), command.seatId());
-
         // 비관적 락으로 좌석 상태 확인
         Reservation existingReservation = reservationRepository.findBySeatIdWithLock(command.seatId());
         if (existingReservation != null) {
@@ -49,7 +47,6 @@ public class ReservationService {
         // 예약(Reservation 객체) 생성
         Reservation reservation = reservationFactory.createReservation(command);
         Reservation savedReservation = reservationRepository.save(reservation);
-        log.info("[ReservationService] 예약 생성 완료 >> Reservation ID: {}", reservation.getId());
         return reservationResultFactory.createResult(savedReservation);
     }
     
