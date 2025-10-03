@@ -1,6 +1,5 @@
 package kr.hhplus.be.server.api.user.application.service;
 
-import kr.hhplus.be.server.api.common.lock.util.RedisPublisher;
 import kr.hhplus.be.server.api.user.application.dto.response.UserBalanceResult;
 import kr.hhplus.be.server.api.user.domain.entity.User;
 import kr.hhplus.be.server.api.user.domain.repository.UserRepository;
@@ -27,7 +26,7 @@ public class UserService {
     /**
      * 결제 처리
      * - 잔액 확인 후 부족 시 충전
-     * - 결제 가능 금액 반환
+     * - 결제 후 남은 잔액 반환
      */
     public Long processPayment(Long userId, Long totalAmount) {
         User user = findOrCreateUser(userId);
@@ -42,7 +41,7 @@ public class UserService {
         user.deductBalance(totalAmount);
         userRepository.save(user);
 
-        return totalAmount;
+        return user.getBalance();
     }
 
     /**
