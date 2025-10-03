@@ -76,17 +76,17 @@ public class ReservationFacade {
         reservation.validate();
         Long seatPrice = reservation.getPrice();
 
-        // 3. 결제 처리 (및 잔액)
-        Long remainingBalance = userService.processPayment(paymentCmd.userId(), paymentCmd.paymentAmount());
+        // 3. 실제 결제 금액 (할인/쿠폰 적용 후)
+        Long paymentAmount = paymentCmd.paymentAmount();
 
-        // 4. 실제 결제 금액 계산
-        Long paidAmount = seatPrice - remainingBalance + paymentCmd.paymentAmount();
+        // 4. 결제 처리 (부족하면 충전 후 차감)
+        Long remainingBalance = userService.processPayment(paymentCmd.userId(), paymentAmount);
 
         // 5. 좌석 상태 변경 및 일정 확인
         ConcertSeatResult seatResult = concertService.payForSeat(reservation.getSeatId());
 
         // 6. 예약 상태 및 결제 정보 업데이트
-        reservation.pay(paidAmount);
+        reservation.pay(paymentAmount);
         reservationService.updateReservation(reservation);
 
         // 7. 대기열 토큰 만료 처리
@@ -100,7 +100,7 @@ public class ReservationFacade {
                 reservation.getId(),
                 reservation.getUserId(),
                 reservation.getSeatId(),
-                paidAmount
+                paymentAmount
         ));
 
         // 9. PaymentResult 생성 및 반환
@@ -109,7 +109,7 @@ public class ReservationFacade {
                 seatResult.status(),
                 remainingBalance,
                 seatPrice,
-                paidAmount,
+                paymentAmount,  // 실제 결제 금액 (할인/쿠폰 적용 후)
                 reservation.getPaidAt()
         );
     }
