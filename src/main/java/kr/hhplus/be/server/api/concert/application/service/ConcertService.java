@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ConcertService {
+    private static final String CACHE_AVAILABLE_DATES = "availableDates";
+    private static final String CACHE_AVAILABLE_SEATS = "availableSeats";
+
     private final ConcertScheduleRepository concertScheduleRepository;
     private final SeatRepository seatRepository;
     private final CacheManager cacheManager;
@@ -30,7 +33,7 @@ public class ConcertService {
     /**
      * 특정 콘서트의 예약 가능한 날짜 조회
      */
-    @Cacheable(value = "availableDates", key = "#concertId", cacheManager = "cacheManager")
+    @Cacheable(value = CACHE_AVAILABLE_DATES, key = "#concertId", cacheManager = "cacheManager")
     public List<LocalDate> getAvailableDateList(Long concertId){
         return concertScheduleRepository.findByConcertIdAndIsSoldOut(concertId, false)
                 .stream()
@@ -42,7 +45,7 @@ public class ConcertService {
     /**
      * 특정 날짜의 예약 가능한 좌석 조회
      */
-    @Cacheable(value = "availableSeats", key = "#concertId + ':' + #scheduleDate", cacheManager = "cacheManager")
+    @Cacheable(value = CACHE_AVAILABLE_SEATS, key = "#concertId + ':' + #scheduleDate", cacheManager = "cacheManager")
     public List<ConcertSeatResult> getAvailableSeatList(Long concertId, LocalDate scheduleDate) {
         return seatRepository.findAvailableSeatList(concertId, scheduleDate)
                 .stream()
@@ -58,15 +61,11 @@ public class ConcertService {
                 .orElseThrow(() -> new CustomException(SeatErrorCode.SEAT_NOT_FOUND));
 
         seat.reserve(); // 좌석 상태 변경
-        Seat reservedSeat = seatRepository.save(seat);
+        Seat savedSeat = seatRepository.save(seat);
 
-        // 콘서트 일정 매진 여부 체크
-        updateConcertSoldOutStatus(seat.getConcertId(), seat.getScheduleDate());
+        updateSeatRelatedData(seat.getConcertId(), seat.getScheduleDate());
 
-        // 캐시 무효화
-        evictSeatCache(seat.getConcertId(), seat.getScheduleDate());
-
-        return ConcertSeatResult.from(reservedSeat);
+        return ConcertSeatResult.from(savedSeat);
     }
 
     /**
@@ -81,21 +80,18 @@ public class ConcertService {
         }
 
         seat.pay(); // 좌석 상태를 PAID로 변경
-        Seat paidSeat = seatRepository.save(seat);
+        Seat savedSeat = seatRepository.save(seat);
 
-        // 콘서트 일정 매진 여부 체크
-        updateConcertSoldOutStatus(seat.getConcertId(), seat.getScheduleDate());
+        updateSeatRelatedData(seat.getConcertId(), seat.getScheduleDate());
 
-        // 캐시 무효화
-        evictSeatCache(seat.getConcertId(), seat.getScheduleDate());
-
-        return ConcertSeatResult.from(paidSeat);
+        return ConcertSeatResult.from(savedSeat);
     }
 
     /**
-     * 콘서트 매진 여부 체크
+     * 좌석 변경 시 관련 데이터 업데이트 (매진 상태 체크 + 캐시 무효화)
      */
-    private void updateConcertSoldOutStatus(Long concertId, LocalDate scheduleDate) {
+    private void updateSeatRelatedData(Long concertId, LocalDate scheduleDate) {
+        // 매진 여부 체크
         ConcertSchedule schedule = concertScheduleRepository.findSchedule(concertId, scheduleDate)
                 .orElseThrow(() -> new CustomException(ConcertErrorCode.CONCERT_NOT_FOUND));
 
@@ -103,15 +99,11 @@ public class ConcertService {
             schedule.markSoldOut();
             concertScheduleRepository.save(schedule);
         }
-    }
 
-    /**
-     * 좌석 캐시 무효화
-     */
-    private void evictSeatCache(Long concertId, LocalDate scheduleDate) {
+        // 캐시 무효화
         String cacheKey = concertId + ":" + scheduleDate;
-        if (cacheManager.getCache("availableSeats") != null) {
-            cacheManager.getCache("availableSeats").evict(cacheKey);
+        if (cacheManager.getCache(CACHE_AVAILABLE_SEATS) != null) {
+            cacheManager.getCache(CACHE_AVAILABLE_SEATS).evict(cacheKey);
         }
     }
 }
