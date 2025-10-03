@@ -6,55 +6,46 @@ import kr.hhplus.be.server.api.token.application.dto.response.RedisTokenResult;
 import kr.hhplus.be.server.api.token.domain.repository.TokenQueueRepository;
 import kr.hhplus.be.server.api.token.domain.repository.TokenRepository;
 import kr.hhplus.be.server.api.token.exception.TokenErrorCode;
-import kr.hhplus.be.server.api.token.presentation.controller.TokenController;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TokenService {
     private final TokenRepository tokenRepository;
     private final TokenQueueRepository tokenQueueRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(TokenService.class);
-
     /**
      * 토큰 발급 (상태: PENDING)
      */
     public RedisTokenResult issueToken(Long userId) {
-        logger.info("[TOKEN ISSUE] 사용자 {}가 토큰 발급을 요청함", userId);
+        log.debug("[TOKEN ISSUE] 사용자 {}가 토큰 발급을 요청함", userId);
 
         if (isUserAlreadyInQueue(userId)) {
-            logger.error("[TOKEN ISSUE] 사용자 {}는 이미 대기열에 등록되어 있음", userId);
+            log.warn("[TOKEN ISSUE] 사용자 {}는 이미 대기열에 등록되어 있음", userId);
             throw new CustomException(TokenErrorCode.USER_ALREADY_IN_QUEUE);
         }
 
         // 토큰 ID 생성
         Long tokenId = tokenRepository.generateTokenId();
         String tokenValue = UUID.randomUUID().toString();
-        logger.info("[TOKEN ISSUE] 생성된 토큰 ID: {}, 사용자 ID: {}", tokenId, userId);
 
         // Redis Hash에 토큰 정보 저장
         tokenRepository.saveToken(tokenId, userId);
-        logger.debug("[TOKEN ISSUE] 토큰 정보 저장 완료: {}", tokenId);
 
         // 대기열에 토큰 ID 추가
         tokenQueueRepository.enqueue(tokenId, userId);
-        logger.info("[TOKEN ISSUE] 토큰 {}이(가) 대기열에 추가됨", tokenId);
 
         // 대기 순위 조회
         Long queuePosition = tokenQueueRepository.getQueuePosition(tokenId);
-        logger.info("[TOKEN ISSUE] 토큰 {}의 대기 순위: {}", tokenId, queuePosition);
+        log.info("[TOKEN ISSUE] 토큰 발급 완료 >> User ID: {}, Token ID: {}, Queue Position: {}", userId, tokenId, queuePosition);
 
         if (queuePosition == null) {
-            logger.error("[TOKEN ISSUE] 토큰 {}이 대기열에 정상적으로 등록되지 않음", tokenId);
+            log.error("[TOKEN ISSUE] 토큰 {}이 대기열에 정상적으로 등록되지 않음", tokenId);
             throw new CustomException(TokenErrorCode.QUEUE_POSITION_NOT_FOUND);
         }
 

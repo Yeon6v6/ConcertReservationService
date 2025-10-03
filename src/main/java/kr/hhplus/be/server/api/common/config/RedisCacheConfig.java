@@ -26,16 +26,25 @@ public class RedisCacheConfig {
                 .registerModule(new JavaTimeModule()) // Java 8 날짜 지원
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // ISO-8601 형식 유지
 
-        // ✅ GenericJackson2JsonRedisSerializer로 변경 (LocalDate 지원)
+        // GenericJackson2JsonRedisSerializer로 변경 (LocalDate 지원)
         RedisSerializer<Object> valueSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
-        RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())) // Key 직렬화
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(valueSerializer)) // Value 직렬화
-                .entryTtl(Duration.ofMinutes(5)); // TTL 5분 설정
+        // 기본 캐시 설정 (5분 TTL)
+        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(valueSerializer))
+                .entryTtl(Duration.ofMinutes(5));
+
+        // availableDates: 예약 가능한 날짜는 자주 변경되지 않으므로 30분 TTL
+        RedisCacheConfiguration datesConfig = defaultConfig.entryTtl(Duration.ofMinutes(30));
+
+        // availableSeats: 좌석 정보는 자주 변경되므로 3분 TTL
+        RedisCacheConfiguration seatsConfig = defaultConfig.entryTtl(Duration.ofMinutes(3));
 
         return RedisCacheManager.builder(redisConnectionFactory)
-                .cacheDefaults(redisCacheConfiguration)
+                .cacheDefaults(defaultConfig)
+                .withCacheConfiguration("availableDates", datesConfig)
+                .withCacheConfiguration("availableSeats", seatsConfig)
                 .build();
     }
 }

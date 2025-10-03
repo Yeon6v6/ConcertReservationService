@@ -1,6 +1,6 @@
 package kr.hhplus.be.server.api.token.infrastructure.repository;
 
-import kr.hhplus.be.server.api.common.type.TokenStatus;
+import kr.hhplus.be.server.api.common.cache.RedisKeyGenerator;
 import kr.hhplus.be.server.api.token.TokenConstants;
 import kr.hhplus.be.server.api.token.domain.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +10,6 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 @Repository
@@ -23,7 +20,7 @@ public class RedisTokenRepository implements TokenRepository {
     private final HashOperations<String, Object, Object> hashOperations;
 
     private String tokenKey(Long tokenId) {
-        return TokenConstants.TOKEN_ID_PREFIX + tokenId;
+        return RedisKeyGenerator.tokenIdKey(tokenId);
     }
 
     /**

@@ -41,6 +41,8 @@ public class RedisTokenQueueRepository implements TokenQueueRepository {
         long score = Instant.now().getEpochSecond();
         zSetOperations.add(TokenConstants.TOKEN_QUEUE_PREFIX, tokenId.toString(), score);
         hashOperations.put(TokenConstants.TOKEN_USER_PREFIX, userId.toString(), tokenId.toString());
+        // 역색인 추가 (tokenId -> userId)
+        hashOperations.put(TokenConstants.TOKEN_TO_USER_PREFIX, tokenId.toString(), userId.toString());
     }
 
     /**
@@ -67,12 +69,12 @@ public class RedisTokenQueueRepository implements TokenQueueRepository {
     public void removeTokenQueue(Long tokenId) {
         zSetOperations.remove(TokenConstants.TOKEN_QUEUE_PREFIX, tokenId.toString());
 
-        // `TOKEN_USER_PREFIX`에서 `tokenId`와 연결된 `userId` 제거
-        hashOperations.entries(TokenConstants.TOKEN_USER_PREFIX).forEach((userId, storedToken) -> {
-            if (storedToken.equals(tokenId.toString())) {
-                hashOperations.delete(TokenConstants.TOKEN_USER_PREFIX, userId);
-            }
-        });
+        // 역색인에서 userId 조회 (O(1))
+        String userId = (String) hashOperations.get(TokenConstants.TOKEN_TO_USER_PREFIX, tokenId.toString());
+        if (userId != null) {
+            hashOperations.delete(TokenConstants.TOKEN_USER_PREFIX, userId);
+            hashOperations.delete(TokenConstants.TOKEN_TO_USER_PREFIX, tokenId.toString());
+        }
     }
 
     /**
@@ -85,11 +87,13 @@ public class RedisTokenQueueRepository implements TokenQueueRepository {
 
         tokens.forEach(token -> {
             zSetOperations.remove(TokenConstants.TOKEN_QUEUE_PREFIX, token);
-            hashOperations.entries(TokenConstants.TOKEN_USER_PREFIX).forEach((userId, storedToken) -> {
-                if (storedToken.equals(token.toString())) {
-                    hashOperations.delete(TokenConstants.TOKEN_USER_PREFIX, userId);
-                }
-            });
+
+            // 역색인에서 userId 조회 (O(1))
+            String userId = (String) hashOperations.get(TokenConstants.TOKEN_TO_USER_PREFIX, token.toString());
+            if (userId != null) {
+                hashOperations.delete(TokenConstants.TOKEN_USER_PREFIX, userId);
+                hashOperations.delete(TokenConstants.TOKEN_TO_USER_PREFIX, token.toString());
+            }
         });
 
         return tokens.stream().map(Object::toString).collect(Collectors.toSet());
@@ -105,11 +109,13 @@ public class RedisTokenQueueRepository implements TokenQueueRepository {
         if (expiredTokens != null) {
             expiredTokens.forEach(tokenObj -> {
                 zSetOperations.remove(TokenConstants.TOKEN_QUEUE_PREFIX, tokenObj);
-                hashOperations.entries(TokenConstants.TOKEN_USER_PREFIX).forEach((userId, storedToken) -> {
-                    if (storedToken.equals(tokenObj.toString())) {
-                        hashOperations.delete(TokenConstants.TOKEN_USER_PREFIX, userId);
-                    }
-                });
+
+                // 역색인에서 userId 조회 (O(1))
+                String userId = (String) hashOperations.get(TokenConstants.TOKEN_TO_USER_PREFIX, tokenObj.toString());
+                if (userId != null) {
+                    hashOperations.delete(TokenConstants.TOKEN_USER_PREFIX, userId);
+                    hashOperations.delete(TokenConstants.TOKEN_TO_USER_PREFIX, tokenObj.toString());
+                }
             });
         }
     }

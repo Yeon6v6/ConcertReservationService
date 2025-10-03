@@ -9,18 +9,16 @@ import kr.hhplus.be.server.api.reservation.domain.factory.ReservationFactory;
 import kr.hhplus.be.server.api.reservation.domain.repository.ReservationRepository;
 import kr.hhplus.be.server.api.reservation.exception.ReservationErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
-    private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
-
     private final ReservationRepository reservationRepository;
     private final ReservationFactory reservationFactory;
     private final ReservationResultFactory reservationResultFactory;
@@ -48,16 +46,11 @@ public class ReservationService {
             }
         }
 
-        try {
-            // 예약(Reservation 객체) 생성
-            Reservation reservation = reservationFactory.createReservation(command);
-            Reservation savedReservation = reservationRepository.save(reservation);
-            log.info("[ReservationService] 예약 생성 완료 >> Reservation ID: {}", reservation.getId());
-            return reservationResultFactory.createResult(savedReservation);
-        } catch (CustomException e) {
-            log.error("[ReservationService] 예약 생성 실패 >> User ID: {}, Seat ID: {}", command.userId(), command.seatId(), e);
-            throw e;
-        }
+        // 예약(Reservation 객체) 생성
+        Reservation reservation = reservationFactory.createReservation(command);
+        Reservation savedReservation = reservationRepository.save(reservation);
+        log.info("[ReservationService] 예약 생성 완료 >> Reservation ID: {}", reservation.getId());
+        return reservationResultFactory.createResult(savedReservation);
     }
     
     /**
